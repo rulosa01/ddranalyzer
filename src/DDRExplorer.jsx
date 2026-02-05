@@ -179,11 +179,33 @@ const TableDetail = ({ table, dbName, reverseRefs, data, onNav }) => {
     });
   }, [table.fields, search, typeFilter]);
 
-  // Find shadow TOs in other files that point to this base table
-  const externalTOs = useMemo(() => {
-    if (!data?.crossFileTableRefs) return [];
-    return data.crossFileTableRefs.filter(r => r.baseTable === table.name && r.externalFile === dbName);
+  // Find ALL TOs across all files based on this table
+  const allTOs = useMemo(() => {
+    if (!data?.databases) return { local: [], external: [] };
+    const local = [];
+    const external = [];
+
+    // Local TOs in same file based on this table
+    const thisDb = data.databases.find(d => d.name === dbName);
+    if (thisDb) {
+      for (const to of thisDb.tableOccurrences || []) {
+        if (to.baseTable === table.name && !to.externalFile) {
+          local.push({ toName: to.name, db: dbName });
+        }
+      }
+    }
+
+    // Shadow TOs in OTHER files that point to this table in this file
+    for (const r of data.crossFileTableRefs || []) {
+      if (r.baseTable === table.name && r.externalFile === dbName) {
+        external.push(r);
+      }
+    }
+
+    return { local, external };
   }, [table.name, dbName, data]);
+
+  const totalTOs = allTOs.local.length + allTOs.external.length;
 
   return (
     <div className="h-full flex flex-col">
@@ -198,23 +220,6 @@ const TableDetail = ({ table, dbName, reverseRefs, data, onNav }) => {
           </div>
         </div>
         {table.comment && <p className="text-sm text-gray-500 italic">{table.comment}</p>}
-
-        {externalTOs.length > 0 && (
-          <div className="mt-3 bg-red-50 border border-red-200 rounded-lg p-3">
-            <div className="flex items-center gap-2 text-sm font-medium text-red-700 mb-2">
-              <ExternalLink size={14} />
-              {externalTOs.length} external TO{externalTOs.length !== 1 ? 's' : ''} reference this table
-            </div>
-            <div className="flex flex-wrap gap-1.5">
-              {externalTOs.map((r, i) => (
-                <div key={i} className="flex items-center gap-1.5 text-xs">
-                  <NavLink type="to" name={r.toName} small onClick={() => onNav('to', r.toName, r.toDb)} />
-                  <span className="text-gray-400">in {r.toDb}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
 
         <div className="flex gap-2 mt-4">
           <div className="relative flex-1">
@@ -238,19 +243,65 @@ const TableDetail = ({ table, dbName, reverseRefs, data, onNav }) => {
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto bg-white">
-        {filteredFields.map((field, i) => (
-          <FieldRow key={i} field={field} tableName={table.name} dbName={dbName} reverseRefs={reverseRefs} onNav={onNav} />
-        ))}
+      <div className="flex-1 overflow-auto">
+        {/* Table Occurrences section */}
+        {totalTOs > 0 && (
+          <div className="bg-gray-50 border-b border-gray-200">
+            <Section title="Table Occurrences" count={totalTOs} icon={<Layers size={14} className="text-violet-500" />} color="to" defaultOpen={true}>
+              <div className="p-3 space-y-3">
+                {allTOs.local.length > 0 && (
+                  <div>
+                    <div className="text-[10px] font-medium text-gray-500 uppercase tracking-wide mb-2">
+                      In {dbName} ({allTOs.local.length})
+                    </div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {allTOs.local.map((to, i) => (
+                        <NavLink key={i} type="to" name={to.toName} small onClick={() => onNav('to', to.toName, to.db)} />
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {allTOs.external.length > 0 && (
+                  <div>
+                    <div className="text-[10px] font-medium text-red-500 uppercase tracking-wide mb-2 flex items-center gap-1.5">
+                      <ExternalLink size={10} />
+                      In Other Files ({allTOs.external.length})
+                    </div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {allTOs.external.map((r, i) => (
+                        <div key={i} className="flex items-center gap-1.5">
+                          <NavLink type="to" name={r.toName} small onClick={() => onNav('to', r.toName, r.toDb)} />
+                          <span className="text-[10px] text-gray-400">({r.toDb})</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </Section>
+          </div>
+        )}
+
+        {/* Fields */}
+        <div className="bg-white">
+          {filteredFields.map((field, i) => (
+            <FieldRow key={i} field={field} tableName={table.name} dbName={dbName} reverseRefs={reverseRefs} onNav={onNav} />
+          ))}
+        </div>
       </div>
     </div>
   );
 };
 
 // Script detail panel
-const ScriptDetail = ({ script, dbName, reverseRefs, onNav }) => {
+const ScriptDetail = ({ script, dbName, reverseRefs, data, onNav }) => {
   const callers = reverseRefs?.scriptCallers?.[script.name] || [];
   const onLayouts = reverseRefs?.scriptOnLayouts?.[script.name] || [];
+
+  const crossFileCallers = useMemo(() => {
+    if (!data?.crossFileRefs) return [];
+    return data.crossFileRefs.filter(r => r.targetScript === script.name && r.targetDb === dbName);
+  }, [script.name, dbName, data]);
 
   return (
     <div className="h-full flex flex-col overflow-hidden">
@@ -272,6 +323,30 @@ const ScriptDetail = ({ script, dbName, reverseRefs, onNav }) => {
             {callers.map((c, i) => <NavLink key={i} type="script" name={c.script} small onClick={() => onNav('script', c.script, c.db)} />)}
           </div>
         </Section>
+
+        {crossFileCallers.length > 0 && (
+          <Section title="Called From Other Files" count={crossFileCallers.length} icon={<ExternalLink size={14} className="text-rose-500" />} color="script">
+            <div className="p-3 space-y-2">
+              {Object.entries(crossFileCallers.reduce((acc, r) => {
+                (acc[r.sourceDb] = acc[r.sourceDb] || []).push(r);
+                return acc;
+              }, {})).map(([sourceDb, refs]) => (
+                <div key={sourceDb}>
+                  <div className="flex items-center gap-1.5 text-xs text-gray-500 mb-1">
+                    <Database size={12} />
+                    <span className="font-medium">{sourceDb}</span>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5 ml-4">
+                    {refs.map((r, i) => (
+                      <NavLink key={i} type="script" name={r.sourceScript} small
+                        onClick={() => onNav('script', r.sourceScript, r.sourceDb)} />
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Section>
+        )}
 
         <Section title="On Layouts" count={onLayouts.length} icon={<Layout size={14} className="text-emerald-500" />} color="layout">
           <div className="p-3 flex flex-wrap gap-1.5">
@@ -1651,7 +1726,7 @@ export default function DDRExplorer() {
     );
 
     if (category === 'tables') return <TableDetail table={selected} dbName={db.name} reverseRefs={reverseRefs} data={data} onNav={handleNav} />;
-    if (category === 'scripts') return <ScriptDetail script={selected} dbName={db.name} reverseRefs={reverseRefs} onNav={handleNav} />;
+    if (category === 'scripts') return <ScriptDetail script={selected} dbName={db.name} reverseRefs={reverseRefs} data={data} onNav={handleNav} />;
     if (category === 'layouts') return <LayoutDetail layout={selected} dbName={db.name} reverseRefs={reverseRefs} onNav={handleNav} />;
     if (category === 'tos') return <TODetail to={selected} dbName={db.name} reverseRefs={reverseRefs} data={data} onNav={handleNav} />;
     if (category === 'rels') return <RelDetail rel={selected} dbName={db.name} onNav={handleNav} />;
