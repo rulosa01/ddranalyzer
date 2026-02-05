@@ -228,7 +228,7 @@ function parseTableOccurrences(doc) {
     const to = {
       id: toEl.getAttribute('id'),
       name: toEl.getAttribute('name'),
-      baseTable: toEl.querySelector('BaseTable')?.getAttribute('name'),
+      baseTable: toEl.getAttribute('basetable'),
     };
     
     // Check for external file reference (shadow TO)
