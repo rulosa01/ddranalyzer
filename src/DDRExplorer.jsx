@@ -162,7 +162,7 @@ const FieldRow = ({ field, tableName, dbName, reverseRefs, onNav }) => {
 };
 
 // Table detail panel
-const TableDetail = ({ table, dbName, reverseRefs, onNav }) => {
+const TableDetail = ({ table, dbName, reverseRefs, data, onNav }) => {
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
 
@@ -179,6 +179,12 @@ const TableDetail = ({ table, dbName, reverseRefs, onNav }) => {
     });
   }, [table.fields, search, typeFilter]);
 
+  // Find shadow TOs in other files that point to this base table
+  const externalTOs = useMemo(() => {
+    if (!data?.crossFileTableRefs) return [];
+    return data.crossFileTableRefs.filter(r => r.baseTable === table.name && r.externalFile === dbName);
+  }, [table.name, dbName, data]);
+
   return (
     <div className="h-full flex flex-col">
       <div className="p-5 border-b border-gray-200 bg-white">
@@ -192,6 +198,23 @@ const TableDetail = ({ table, dbName, reverseRefs, onNav }) => {
           </div>
         </div>
         {table.comment && <p className="text-sm text-gray-500 italic">{table.comment}</p>}
+
+        {externalTOs.length > 0 && (
+          <div className="mt-3 bg-red-50 border border-red-200 rounded-lg p-3">
+            <div className="flex items-center gap-2 text-sm font-medium text-red-700 mb-2">
+              <ExternalLink size={14} />
+              {externalTOs.length} external TO{externalTOs.length !== 1 ? 's' : ''} reference this table
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {externalTOs.map((r, i) => (
+                <div key={i} className="flex items-center gap-1.5 text-xs">
+                  <NavLink type="to" name={r.toName} small onClick={() => onNav('to', r.toName, r.toDb)} />
+                  <span className="text-gray-400">in {r.toDb}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="flex gap-2 mt-4">
           <div className="relative flex-1">
@@ -379,15 +402,30 @@ const LayoutDetail = ({ layout, dbName, reverseRefs, onNav }) => {
 };
 
 // TO detail panel
-const TODetail = ({ to, dbName, reverseRefs, onNav }) => {
+const TODetail = ({ to, dbName, reverseRefs, data, onNav }) => {
   const layouts = reverseRefs?.toLayouts?.[to.name] || [];
   const rels = reverseRefs?.toRelationships?.[to.name] || [];
+
+  // Find other TOs across all files that share the same base table (siblings)
+  const siblingTOs = useMemo(() => {
+    if (!data?.crossFileTableRefs) return [];
+    // If this TO is a shadow TO, find other shadow TOs pointing to the same external table
+    if (to.externalFile) {
+      return data.crossFileTableRefs.filter(r =>
+        r.baseTable === to.baseTable && r.externalFile === to.externalFile && !(r.toName === to.name && r.toDb === dbName)
+      );
+    }
+    // If this is a local TO, find shadow TOs in other files pointing to this base table in this db
+    return data.crossFileTableRefs.filter(r =>
+      r.baseTable === to.baseTable && r.externalFile === dbName
+    );
+  }, [to, dbName, data]);
 
   return (
     <div className="h-full flex flex-col overflow-hidden">
       <div className="p-5 border-b border-gray-200 bg-white">
         <div className="flex items-center gap-3">
-          <div className={`w-10 h-10 ${C.to.bg} rounded-xl flex items-center justify-center shadow-lg`}>
+          <div className={`w-10 h-10 ${to.externalFile ? C.ext.bg : C.to.bg} rounded-xl flex items-center justify-center shadow-lg`}>
             <Layers size={18} className="text-white" />
           </div>
           <div>
@@ -401,6 +439,36 @@ const TODetail = ({ to, dbName, reverseRefs, onNav }) => {
       </div>
 
       <div className="flex-1 overflow-auto p-4 space-y-2 bg-gray-50">
+        {to.externalFile && (
+          <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-2">
+            <div className="flex items-center gap-2 text-sm text-red-700">
+              <ExternalLink size={14} />
+              <span className="font-medium">Shadow TO</span>
+            </div>
+            <p className="text-xs text-red-600 mt-1">
+              This table occurrence points to <strong>{to.baseTable}</strong> in external file <strong>{to.externalFile}</strong>
+            </p>
+          </div>
+        )}
+
+        {siblingTOs.length > 0 && (
+          <Section
+            title={to.externalFile ? "Other TOs Referencing Same Table" : "External TOs Pointing to This Table"}
+            count={siblingTOs.length}
+            icon={<ExternalLink size={14} className="text-red-500" />}
+            color="ext"
+          >
+            <div className="p-3 space-y-2">
+              {siblingTOs.map((r, i) => (
+                <div key={i} className="flex items-center gap-3 text-sm">
+                  <NavLink type="to" name={r.toName} small onClick={() => onNav('to', r.toName, r.toDb)} />
+                  <span className="text-gray-400 text-xs">in {r.toDb}</span>
+                </div>
+              ))}
+            </div>
+          </Section>
+        )}
+
         <Section title="Layouts Using This TO" count={layouts.length} icon={<Layout size={14} className="text-emerald-500" />} color="layout">
           <div className="p-3 flex flex-wrap gap-1.5">
             {layouts.map((l, i) => <NavLink key={i} type="layout" name={l.layout} small onClick={() => onNav('layout', l.layout, l.db)} />)}
@@ -546,50 +614,190 @@ const StatsView = ({ data }) => {
 
 // Cross-file references view
 const CrossFileView = ({ data, onNav }) => {
-  const refs = data.crossFileRefs || [];
-  const grouped = useMemo(() => {
+  const [tab, setTab] = useState('tos');
+  const scriptRefs = data.crossFileRefs || [];
+  const toRefs = data.crossFileTableRefs || [];
+
+  const groupedScripts = useMemo(() => {
     const g = {};
-    for (const r of refs) {
+    for (const r of scriptRefs) {
       const key = `${r.sourceDb} → ${r.targetDb}`;
       if (!g[key]) g[key] = [];
       g[key].push(r);
     }
     return g;
-  }, [refs]);
+  }, [scriptRefs]);
 
-  if (refs.length === 0) {
+  // Group TOs by external file they point to
+  const groupedTOs = useMemo(() => {
+    const g = {};
+    for (const r of toRefs) {
+      const key = `${r.toDb} → ${r.externalFile}`;
+      if (!g[key]) g[key] = [];
+      g[key].push(r);
+    }
+    return g;
+  }, [toRefs]);
+
+  // Group TOs by base table for a "which tables are referenced externally" view
+  const tableGroups = useMemo(() => {
+    const g = {};
+    for (const r of toRefs) {
+      const key = `${r.externalFile}::${r.baseTable}`;
+      if (!g[key]) g[key] = { externalFile: r.externalFile, baseTable: r.baseTable, tos: [] };
+      g[key].tos.push(r);
+    }
+    return Object.values(g).sort((a, b) => b.tos.length - a.tos.length);
+  }, [toRefs]);
+
+  const totalRefs = scriptRefs.length + toRefs.length;
+
+  if (totalRefs === 0) {
     return (
       <div className="p-6 text-center text-gray-500">
         <ExternalLink size={48} className="mx-auto mb-4 text-gray-300" />
         <p>No cross-file references found</p>
+        <p className="text-sm text-gray-400 mt-2">Shadow TOs and external script calls will appear here</p>
       </div>
     );
   }
 
   return (
-    <div className="p-6 space-y-4">
-      <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-3">
-        <ExternalLink size={20} className="text-red-500" />
-        Cross-File Script Calls ({refs.length})
-      </h2>
-
-      {Object.entries(grouped).map(([key, items]) => (
-        <div key={key} className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
-          <div className="bg-red-50 px-4 py-3 border-b border-red-100 flex items-center gap-3">
-            <span className="font-medium text-red-600">{key}</span>
-            <Badge color="ext" size="xs">{items.length}</Badge>
-          </div>
-          <div className="p-4 space-y-2">
-            {items.map((r, i) => (
-              <div key={i} className="flex items-center gap-3 text-sm">
-                <NavLink type="script" name={r.sourceScript} onClick={() => onNav('script', r.sourceScript, r.sourceDb)} />
-                <ArrowRight size={14} className="text-gray-400" />
-                <span className="text-gray-500">{r.targetScript}</span>
-              </div>
-            ))}
-          </div>
+    <div className="p-6 space-y-6">
+      <div className="flex items-center gap-4 mb-2">
+        <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-pink-500 rounded-xl flex items-center justify-center shadow-lg">
+          <ExternalLink size={24} className="text-white" />
         </div>
-      ))}
+        <div>
+          <h2 className="text-xl font-bold text-gray-800">Cross-File References</h2>
+          <p className="text-sm text-gray-500">{toRefs.length} shadow TOs · {scriptRefs.length} external script calls</p>
+        </div>
+      </div>
+
+      <div className="flex gap-2 mb-4">
+        {[
+          { id: 'tos', label: 'Shadow TOs', icon: Layers, count: toRefs.length },
+          { id: 'tables', label: 'By Base Table', icon: Table, count: tableGroups.length },
+          { id: 'scripts', label: 'Script Calls', icon: Code, count: scriptRefs.length },
+        ].map(t => (
+          <button
+            key={t.id}
+            onClick={() => setTab(t.id)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+              tab === t.id
+                ? 'bg-red-500 text-white shadow-lg'
+                : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
+            }`}
+          >
+            <t.icon size={14} />
+            {t.label}
+            <span className={`px-1.5 py-0.5 rounded-full text-xs ${tab === t.id ? 'bg-white/20' : 'bg-gray-100'}`}>
+              {t.count}
+            </span>
+          </button>
+        ))}
+      </div>
+
+      {tab === 'tos' && (
+        <div className="space-y-4">
+          {Object.entries(groupedTOs).map(([key, items]) => (
+            <div key={key} className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+              <div className="bg-violet-50 px-4 py-3 border-b border-violet-100 flex items-center gap-3">
+                <Layers size={16} className="text-violet-500" />
+                <span className="font-medium text-violet-700">{key}</span>
+                <Badge color="to" size="xs">{items.length} TOs</Badge>
+              </div>
+              <div className="p-4">
+                <table className="w-full text-sm">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="text-left p-2 font-medium text-gray-700">TO Name</th>
+                      <th className="text-left p-2 font-medium text-gray-700">Base Table</th>
+                      <th className="text-left p-2 font-medium text-gray-700">External File</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {items.map((r, i) => (
+                      <tr key={i} className="border-t border-gray-100 hover:bg-gray-50">
+                        <td className="p-2">
+                          <NavLink type="to" name={r.toName} small onClick={() => onNav('to', r.toName, r.toDb)} />
+                        </td>
+                        <td className="p-2 text-gray-600">{r.baseTable}</td>
+                        <td className="p-2">
+                          <Badge color="ext" size="xs">{r.externalFile}</Badge>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ))}
+          {toRefs.length === 0 && (
+            <div className="text-center py-12 text-gray-500">
+              <Layers size={48} className="mx-auto mb-4 text-gray-300" />
+              <p>No shadow table occurrences found</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {tab === 'tables' && (
+        <div className="space-y-4">
+          {tableGroups.map((group, gi) => (
+            <div key={gi} className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+              <div className="bg-blue-50 px-4 py-3 border-b border-blue-100 flex items-center gap-3">
+                <Table size={16} className="text-blue-500" />
+                <span className="font-medium text-blue-700">{group.externalFile}::{group.baseTable}</span>
+                <Badge color="to" size="xs">{group.tos.length} TOs</Badge>
+              </div>
+              <div className="p-4 flex flex-wrap gap-2">
+                {group.tos.map((r, i) => (
+                  <div key={i} className="flex items-center gap-2 text-sm bg-gray-50 rounded-lg px-3 py-2 border border-gray-100">
+                    <NavLink type="to" name={r.toName} small onClick={() => onNav('to', r.toName, r.toDb)} />
+                    <span className="text-gray-400 text-xs">in {r.toDb}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+          {tableGroups.length === 0 && (
+            <div className="text-center py-12 text-gray-500">
+              <Table size={48} className="mx-auto mb-4 text-gray-300" />
+              <p>No cross-file table references found</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {tab === 'scripts' && (
+        <div className="space-y-4">
+          {Object.entries(groupedScripts).map(([key, items]) => (
+            <div key={key} className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+              <div className="bg-red-50 px-4 py-3 border-b border-red-100 flex items-center gap-3">
+                <Code size={16} className="text-red-500" />
+                <span className="font-medium text-red-600">{key}</span>
+                <Badge color="ext" size="xs">{items.length}</Badge>
+              </div>
+              <div className="p-4 space-y-2">
+                {items.map((r, i) => (
+                  <div key={i} className="flex items-center gap-3 text-sm">
+                    <NavLink type="script" name={r.sourceScript} onClick={() => onNav('script', r.sourceScript, r.sourceDb)} />
+                    <ArrowRight size={14} className="text-gray-400" />
+                    <span className="text-gray-500">{r.targetScript}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+          {scriptRefs.length === 0 && (
+            <div className="text-center py-12 text-gray-500">
+              <Code size={48} className="mx-auto mb-4 text-gray-300" />
+              <p>No cross-file script calls found</p>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
@@ -1442,10 +1650,10 @@ export default function DDRExplorer() {
       </div>
     );
 
-    if (category === 'tables') return <TableDetail table={selected} dbName={db.name} reverseRefs={reverseRefs} onNav={handleNav} />;
+    if (category === 'tables') return <TableDetail table={selected} dbName={db.name} reverseRefs={reverseRefs} data={data} onNav={handleNav} />;
     if (category === 'scripts') return <ScriptDetail script={selected} dbName={db.name} reverseRefs={reverseRefs} onNav={handleNav} />;
     if (category === 'layouts') return <LayoutDetail layout={selected} dbName={db.name} reverseRefs={reverseRefs} onNav={handleNav} />;
-    if (category === 'tos') return <TODetail to={selected} dbName={db.name} reverseRefs={reverseRefs} onNav={handleNav} />;
+    if (category === 'tos') return <TODetail to={selected} dbName={db.name} reverseRefs={reverseRefs} data={data} onNav={handleNav} />;
     if (category === 'rels') return <RelDetail rel={selected} dbName={db.name} onNav={handleNav} />;
 
     return (

@@ -24,9 +24,11 @@ export async function parseXMLFiles(files) {
   const reverseRefs = buildReverseReferences(databases);
   
   // Find cross-file references
-  const crossFileRefs = findCrossFileReferences(databases);
-  
-  return { databases, reverseRefs, crossFileRefs };
+  const { scriptRefs, toRefs } = findCrossFileReferences(databases);
+  const crossFileRefs = scriptRefs; // backward compat
+  const crossFileTableRefs = toRefs;
+
+  return { databases, reverseRefs, crossFileRefs, crossFileTableRefs };
 }
 
 /**
@@ -651,16 +653,18 @@ function buildReverseReferences(databases) {
 }
 
 /**
- * Find cross-file script references
+ * Find cross-file references (scripts and table occurrences)
  */
 function findCrossFileReferences(databases) {
-  const crossRefs = [];
+  const scriptRefs = [];
+  const toRefs = [];
 
   for (const db of databases) {
+    // Cross-file script calls
     for (const script of db.scripts || []) {
       for (const called of script.callsScripts || []) {
         if (called.external) {
-          crossRefs.push({
+          scriptRefs.push({
             sourceDb: db.name,
             sourceScript: script.name,
             targetDb: called.file,
@@ -669,9 +673,21 @@ function findCrossFileReferences(databases) {
         }
       }
     }
+
+    // Cross-file table occurrences (shadow TOs)
+    for (const to of db.tableOccurrences || []) {
+      if (to.externalFile) {
+        toRefs.push({
+          toName: to.name,
+          toDb: db.name,
+          baseTable: to.baseTable,
+          externalFile: to.externalFile,
+        });
+      }
+    }
   }
 
-  return crossRefs;
+  return { scriptRefs, toRefs };
 }
 
 /**
