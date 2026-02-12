@@ -395,13 +395,58 @@ const ScriptDetail = ({ script, dbName, reverseRefs, data, onNav }) => {
 
         {script.steps?.length > 0 && (
           <Section title="Steps" count={script.steps.length} icon={<List size={14} className="text-gray-500" />} color="field" defaultOpen={false}>
-            <div className="p-3 text-xs font-mono space-y-1 max-h-96 overflow-auto">
+            <div className="p-3 text-xs space-y-0.5 max-h-[32rem] overflow-auto">
               {script.steps.map((step, i) => (
-                <div key={i} className="flex gap-3 py-1 px-2 hover:bg-white rounded">
-                  <span className="text-gray-400 w-6 text-right flex-shrink-0">{step.index || i+1}</span>
-                  <span className="text-gray-700">{step.name}</span>
-                  {step.scriptRef && <NavLink type="script" name={step.scriptRef} small onClick={() => onNav('script', step.scriptRef, dbName)} />}
-                  {step.layoutRef && <NavLink type="layout" name={step.layoutRef} small onClick={() => onNav('layout', step.layoutRef, dbName)} />}
+                <div key={i} className={`py-1.5 px-2 rounded ${!step.enabled ? 'opacity-50 bg-gray-100' : 'hover:bg-white'}`}>
+                  <div className="flex items-start gap-2">
+                    <span className="text-gray-400 w-6 text-right flex-shrink-0 font-mono">{step.index || i+1}</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className={`font-medium ${!step.enabled ? 'text-gray-400 line-through' : 'text-gray-700'}`}>{step.name}</span>
+                        {step.scriptRef && (
+                          <NavLink type={step.externalFile ? 'ext' : 'script'} name={step.externalFile ? `${step.externalFile}::${step.scriptRef}` : step.scriptRef} small
+                            onClick={() => !step.externalFile && onNav('script', step.scriptRef, dbName)} />
+                        )}
+                        {step.layoutRef && <NavLink type="layout" name={step.layoutRef} small onClick={() => onNav('layout', step.layoutRef, dbName)} />}
+                        {step.table && <Badge color="table" size="xs">{step.table}</Badge>}
+                        {!step.enabled && <Badge color="ext" size="xs">Disabled</Badge>}
+                      </div>
+                      {/* Show step details based on type */}
+                      {step.text && step.text !== step.name && (
+                        <div className="text-[11px] text-gray-500 mt-0.5 font-mono truncate" title={step.text}>{step.text}</div>
+                      )}
+                      {step.targetField && (
+                        <div className="text-[11px] text-cyan-600 mt-0.5">→ {step.targetField}</div>
+                      )}
+                      {step.variableName && (
+                        <div className="text-[11px] text-violet-600 mt-0.5">
+                          {step.variableName}{step.repetition && ` [${step.repetition}]`}
+                          {step.calculation && <span className="text-gray-400"> = </span>}
+                          {step.calculation && <span className="text-gray-600 font-mono">{step.calculation.length > 60 ? step.calculation.slice(0, 60) + '...' : step.calculation}</span>}
+                        </div>
+                      )}
+                      {step.condition && (
+                        <div className="text-[11px] text-amber-600 mt-0.5 font-mono">
+                          {step.condition.length > 80 ? step.condition.slice(0, 80) + '...' : step.condition}
+                        </div>
+                      )}
+                      {step.url && (
+                        <div className="text-[11px] text-blue-600 mt-0.5 font-mono truncate">{step.url}</div>
+                      )}
+                      {step.sortFields && (
+                        <div className="text-[11px] text-gray-500 mt-0.5">Sort by: {step.sortFields.join(', ')}</div>
+                      )}
+                      {step.title && (
+                        <div className="text-[11px] text-gray-500 mt-0.5">Title: {step.title}</div>
+                      )}
+                      {step.windowName && (
+                        <div className="text-[11px] text-gray-500 mt-0.5">Window: {step.windowName}</div>
+                      )}
+                      {step.recordAction && (
+                        <div className="text-[11px] text-gray-500 mt-0.5">{step.recordAction}</div>
+                      )}
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>

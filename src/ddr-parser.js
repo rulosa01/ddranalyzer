@@ -375,42 +375,161 @@ function parseScript(scriptEl, folder) {
   };
   
   // Parse steps
+  let stepIndex = 0;
   for (const stepEl of scriptEl.querySelectorAll('StepList > Step')) {
+    stepIndex++;
+    const stepName = stepEl.getAttribute('name') || '';
     const step = {
-      index: stepEl.getAttribute('index'),
-      name: stepEl.getAttribute('name'),
+      index: stepEl.getAttribute('index') || stepIndex,
+      id: stepEl.getAttribute('id'),
+      name: stepName,
+      enabled: stepEl.getAttribute('enable') !== 'False',
+      text: stepEl.querySelector('StepText')?.textContent || '',
     };
-    
+
+    // Get calculation if present
+    const calcEl = stepEl.querySelector('Calculation');
+    if (calcEl) {
+      step.calculation = calcEl.textContent?.trim() || '';
+    }
+
+    // Get target field for Set Field, Insert Calculated Result, etc.
+    const targetField = stepEl.querySelector('Field[table]');
+    if (targetField) {
+      step.targetField = `${targetField.getAttribute('table')}::${targetField.getAttribute('name')}`;
+    }
+
+    // Get table reference
+    const tableEl = stepEl.querySelector('Table');
+    if (tableEl) {
+      step.table = tableEl.getAttribute('name');
+    }
+
     // Perform Script
     const perfScriptEl = stepEl.querySelector('Script');
-    if (perfScriptEl && stepEl.getAttribute('name')?.includes('Script')) {
+    if (perfScriptEl && stepName.includes('Script')) {
       const fileRef = stepEl.querySelector('FileReference');
+      const scriptName = perfScriptEl.getAttribute('name');
       if (fileRef) {
         script.callsScripts.push({
-          name: perfScriptEl.getAttribute('name'),
+          name: scriptName,
           file: fileRef.getAttribute('name'),
           external: true,
         });
+        step.scriptRef = scriptName;
+        step.externalFile = fileRef.getAttribute('name');
       } else {
         script.callsScripts.push({
-          name: perfScriptEl.getAttribute('name'),
+          name: scriptName,
           external: false,
         });
+        step.scriptRef = scriptName;
       }
-      step.scriptRef = perfScriptEl.getAttribute('name');
     }
-    
+
     // Go to Layout
     const layoutEl = stepEl.querySelector('Layout');
-    if (layoutEl && stepEl.getAttribute('name')?.includes('Layout')) {
+    if (layoutEl && stepName.includes('Layout')) {
       const layoutName = layoutEl.getAttribute('name');
       if (layoutName && !script.goesToLayouts.includes(layoutName)) {
         script.goesToLayouts.push(layoutName);
       }
       step.layoutRef = layoutName;
     }
-    
-    // Field references
+
+    // Go to Record/Request/Page
+    if (stepName.includes('Go to Record')) {
+      const calcText = calcEl?.textContent || '';
+      step.recordAction = stepEl.querySelector('Calculation') ? 'By Calculation' :
+        stepEl.querySelector('First')?.getAttribute('state') === 'True' ? 'First' :
+        stepEl.querySelector('Last')?.getAttribute('state') === 'True' ? 'Last' :
+        stepEl.querySelector('Next')?.getAttribute('state') === 'True' ? 'Next' :
+        stepEl.querySelector('Previous')?.getAttribute('state') === 'True' ? 'Previous' : 'Unknown';
+    }
+
+    // Set Variable
+    if (stepName === 'Set Variable') {
+      const varName = stepEl.querySelector('Name > Calculation')?.textContent ||
+                      stepEl.querySelector('Text')?.textContent;
+      if (varName) {
+        step.variableName = varName.trim();
+        if (!script.variables.includes(varName.trim())) {
+          script.variables.push(varName.trim());
+        }
+      }
+      const repetition = stepEl.querySelector('Repetition > Calculation')?.textContent;
+      if (repetition) {
+        step.repetition = repetition.trim();
+      }
+    }
+
+    // If/Else If condition
+    if (stepName === 'If' || stepName === 'Else If') {
+      step.condition = calcEl?.textContent?.trim() || '';
+    }
+
+    // Loop
+    if (stepName === 'Loop') {
+      // Check for flush option
+      step.flushAfter = stepEl.querySelector('Flush')?.getAttribute('state') === 'True';
+    }
+
+    // Exit Loop If
+    if (stepName === 'Exit Loop If') {
+      step.condition = calcEl?.textContent?.trim() || '';
+    }
+
+    // Commit/Revert
+    if (stepName.includes('Commit') || stepName.includes('Revert')) {
+      step.skipValidation = stepEl.querySelector('NoDialog')?.getAttribute('state') === 'True' ||
+                            stepEl.querySelector('SkipValidation')?.getAttribute('state') === 'True';
+    }
+
+    // New Window / New Record options
+    if (stepName === 'New Window') {
+      step.windowName = stepEl.querySelector('Name > Calculation')?.textContent?.trim();
+      step.windowStyle = stepEl.querySelector('Style')?.textContent;
+    }
+
+    // Show Custom Dialog
+    if (stepName === 'Show Custom Dialog') {
+      step.title = stepEl.querySelector('Title > Calculation')?.textContent?.trim();
+      step.message = stepEl.querySelector('Message > Calculation')?.textContent?.trim();
+      // Count input fields
+      const inputFields = stepEl.querySelectorAll('InputField');
+      if (inputFields.length > 0) {
+        step.inputFieldCount = inputFields.length;
+      }
+      // Count buttons
+      const buttons = stepEl.querySelectorAll('Button');
+      if (buttons.length > 0) {
+        step.buttonCount = buttons.length;
+      }
+    }
+
+    // Insert From URL / Send Event
+    if (stepName.includes('URL') || stepName === 'Send Event') {
+      step.url = stepEl.querySelector('URL > Calculation')?.textContent?.trim() ||
+                 stepEl.querySelector('Calculation')?.textContent?.trim();
+    }
+
+    // Open URL
+    if (stepName === 'Open URL') {
+      step.url = stepEl.querySelector('Calculation')?.textContent?.trim();
+    }
+
+    // Sort Records
+    if (stepName === 'Sort Records') {
+      const sortFields = stepEl.querySelectorAll('SortList > Sort');
+      if (sortFields.length > 0) {
+        step.sortFields = Array.from(sortFields).map(s => {
+          const f = s.querySelector('Field');
+          return f ? `${f.getAttribute('table')}::${f.getAttribute('name')}` : 'Unknown';
+        });
+      }
+    }
+
+    // Collect all field references
     for (const fieldEl of stepEl.querySelectorAll('Field[table]')) {
       const tableName = fieldEl.getAttribute('table');
       const fieldName = fieldEl.getAttribute('name');
@@ -421,17 +540,8 @@ function parseScript(scriptEl, folder) {
         }
       }
     }
-    
-    // Variables (Set Variable step)
-    if (stepEl.getAttribute('name') === 'Set Variable') {
-      const varName = stepEl.querySelector('Text')?.textContent;
-      if (varName && !script.variables.includes(varName)) {
-        script.variables.push(varName);
-      }
-    }
-    
+
     // Extract field references from calculations
-    const calcEl = stepEl.querySelector('Calculation');
     if (calcEl) {
       const calcText = calcEl.textContent;
       const refs = extractFieldReferences(calcText);
