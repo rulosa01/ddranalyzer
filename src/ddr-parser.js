@@ -175,6 +175,24 @@ function parseField(fieldEl) {
 }
 
 /**
+ * Parse field-level script triggers from layout fields
+ * This is called during layout parsing to associate triggers with fields
+ */
+function parseFieldTriggers(fieldObjEl) {
+  const triggers = [];
+  for (const triggerEl of fieldObjEl.querySelectorAll('ScriptTriggers > Trigger')) {
+    const scriptEl = triggerEl.querySelector('Script');
+    if (scriptEl) {
+      triggers.push({
+        type: triggerEl.getAttribute('type'),
+        script: scriptEl.getAttribute('name'),
+      });
+    }
+  }
+  return triggers;
+}
+
+/**
  * Parse auto-enter options into summary string
  */
 function parseAutoEnter(el) {
@@ -282,7 +300,7 @@ function parseRelationships(doc) {
  */
 function parseLayouts(doc) {
   const layouts = [];
-  
+
   for (const layoutEl of doc.querySelectorAll('LayoutCatalog > Layout')) {
     const layout = {
       id: layoutEl.getAttribute('id'),
@@ -291,19 +309,21 @@ function parseLayouts(doc) {
       triggers: [],
       buttonScripts: [],
       fields: [],
+      fieldTriggers: [], // Field-level script triggers
     };
-    
-    // Script triggers
-    for (const triggerEl of layoutEl.querySelectorAll('ScriptTriggers > Trigger')) {
+
+    // Layout-level script triggers
+    for (const triggerEl of layoutEl.querySelectorAll(':scope > ScriptTriggers > Trigger')) {
       const scriptEl = triggerEl.querySelector('Script');
       if (scriptEl) {
         layout.triggers.push({
           type: triggerEl.getAttribute('type'),
           script: scriptEl.getAttribute('name'),
+          level: 'layout',
         });
       }
     }
-    
+
     // Button scripts
     for (const buttonEl of layoutEl.querySelectorAll('Object[type="Button"] ButtonObj Step Script')) {
       const scriptName = buttonEl.getAttribute('name');
@@ -311,22 +331,44 @@ function parseLayouts(doc) {
         layout.buttonScripts.push(scriptName);
       }
     }
-    
-    // Fields on layout
-    for (const fieldEl of layoutEl.querySelectorAll('Object[type="Field"] FieldObj DDRInfo Field')) {
-      const tableName = fieldEl.getAttribute('table');
-      const fieldName = fieldEl.getAttribute('name');
-      if (tableName && fieldName) {
-        const ref = `${tableName}::${fieldName}`;
-        if (!layout.fields.includes(ref)) {
-          layout.fields.push(ref);
+
+    // Fields on layout with their triggers
+    for (const fieldObjEl of layoutEl.querySelectorAll('Object[type="Field"]')) {
+      const fieldInfo = fieldObjEl.querySelector('FieldObj DDRInfo Field');
+      if (!fieldInfo) continue;
+
+      const tableName = fieldInfo.getAttribute('table');
+      const fieldName = fieldInfo.getAttribute('name');
+      if (!tableName || !fieldName) continue;
+
+      const ref = `${tableName}::${fieldName}`;
+      if (!layout.fields.includes(ref)) {
+        layout.fields.push(ref);
+      }
+
+      // Parse field-level script triggers
+      for (const triggerEl of fieldObjEl.querySelectorAll('ScriptTriggers > Trigger')) {
+        const scriptEl = triggerEl.querySelector('Script');
+        if (scriptEl) {
+          layout.fieldTriggers.push({
+            field: ref,
+            type: triggerEl.getAttribute('type'),
+            script: scriptEl.getAttribute('name'),
+          });
+          // Also add to main triggers list for script tracking
+          layout.triggers.push({
+            type: triggerEl.getAttribute('type'),
+            script: scriptEl.getAttribute('name'),
+            level: 'field',
+            field: ref,
+          });
         }
       }
     }
-    
+
     layouts.push(layout);
   }
-  
+
   return layouts;
 }
 
@@ -899,6 +941,8 @@ export function analyzeDatabase(data) {
     security: findSecurityIssues(databases),
     indirection: findIndirectionSources(databases),
     complexity: calculateComplexity(databases),
+    fieldUsage: analyzeFieldUsage(databases, reverseRefs),
+    performance: analyzePerformance(databases),
   };
 
   return analysis;
@@ -1250,6 +1294,239 @@ function calculateComplexity(databases) {
   else metrics.complexity.level = 'Very Complex';
 
   return metrics;
+}
+
+/**
+ * Analyze field usage across databases
+ */
+function analyzeFieldUsage(databases, reverseRefs) {
+  const usage = {
+    all: [],           // All fields with usage info
+    unused: [],        // Fields with no references
+    rarelyUsed: [],    // Used in 1 place
+    moderatelyUsed: [], // 2-5 references
+    heavilyUsed: [],   // 6+ references
+    byTable: {},       // Grouped by table
+    summary: {
+      total: 0,
+      unused: 0,
+      calculated: 0,
+      global: 0,
+      indexed: 0,
+      containers: 0,
+    },
+  };
+
+  for (const db of databases) {
+    for (const table of db.tables || []) {
+      const tableKey = `${db.name}::${table.name}`;
+      usage.byTable[tableKey] = [];
+
+      for (const field of table.fields || []) {
+        const fieldKey = `${table.name}::${field.name}`;
+
+        // Collect usage references
+        const inScripts = reverseRefs?.fieldInScripts?.[fieldKey] || [];
+        const onLayouts = reverseRefs?.fieldOnLayouts?.[fieldKey] || [];
+        const inCalcs = reverseRefs?.fieldInCalcs?.[fieldKey] || [];
+
+        const totalRefs = inScripts.length + onLayouts.length + inCalcs.length;
+
+        // Skip common system fields for "unused" categorization
+        const systemFields = ['id', 'uuid', 'created', 'modified', 'createdby', 'modifiedby', 'pk', 'fk', 'primarykey', 'foreignkey'];
+        const isSystem = systemFields.some(sf => field.name.toLowerCase().includes(sf));
+
+        const fieldInfo = {
+          name: field.name,
+          fullName: fieldKey,
+          table: table.name,
+          db: db.name,
+          dataType: field.dataType,
+          fieldType: field.fieldType,
+          isGlobal: field.global || false,
+          isIndexed: field.indexed || false,
+          isCalculated: field.fieldType === 'Calculated',
+          isSummary: field.fieldType === 'Summary',
+          hasAutoEnter: !!field.autoEnter,
+          hasValidation: !!field.validation,
+          isSystem,
+          references: {
+            scripts: inScripts,
+            layouts: onLayouts,
+            calcs: inCalcs,
+          },
+          refCount: totalRefs,
+          scriptCount: inScripts.length,
+          layoutCount: onLayouts.length,
+          calcCount: inCalcs.length,
+        };
+
+        usage.all.push(fieldInfo);
+        usage.byTable[tableKey].push(fieldInfo);
+
+        // Update summary
+        usage.summary.total++;
+        if (field.fieldType === 'Calculated') usage.summary.calculated++;
+        if (field.global) usage.summary.global++;
+        if (field.indexed) usage.summary.indexed++;
+        if (field.dataType === 'Container') usage.summary.containers++;
+
+        // Categorize by usage level
+        if (totalRefs === 0 && !isSystem) {
+          usage.unused.push(fieldInfo);
+          usage.summary.unused++;
+        } else if (totalRefs === 1) {
+          usage.rarelyUsed.push(fieldInfo);
+        } else if (totalRefs >= 2 && totalRefs <= 5) {
+          usage.moderatelyUsed.push(fieldInfo);
+        } else if (totalRefs > 5) {
+          usage.heavilyUsed.push(fieldInfo);
+        }
+      }
+    }
+  }
+
+  // Sort by table for easier browsing
+  usage.unused.sort((a, b) => a.table.localeCompare(b.table) || a.name.localeCompare(b.name));
+  usage.rarelyUsed.sort((a, b) => a.table.localeCompare(b.table) || a.name.localeCompare(b.name));
+  usage.heavilyUsed.sort((a, b) => b.refCount - a.refCount);
+
+  return usage;
+}
+
+/**
+ * Analyze performance concerns
+ */
+function analyzePerformance(databases) {
+  const hints = {
+    unstoredCalcs: [],
+    wideTables: [],        // Tables with many fields
+    largeScripts: [],      // Scripts with many steps
+    heavyRelationships: [], // TOs with many relationships
+    containerFields: [],   // Container fields (potential storage concerns)
+    globalFields: [],      // Global fields (session state)
+    executeSQLCalcs: [],   // Calcs using ExecuteSQL
+    summary: {
+      unstoredCalcCount: 0,
+      wideTableCount: 0,
+      largeScriptCount: 0,
+      containerFieldCount: 0,
+      globalFieldCount: 0,
+    },
+  };
+
+  const WIDE_TABLE_THRESHOLD = 50;   // Fields
+  const LARGE_SCRIPT_THRESHOLD = 100; // Steps
+
+  for (const db of databases) {
+    // Check tables
+    for (const table of db.tables || []) {
+      // Wide tables
+      if (table.fields?.length > WIDE_TABLE_THRESHOLD) {
+        hints.wideTables.push({
+          name: table.name,
+          db: db.name,
+          fieldCount: table.fields.length,
+          severity: table.fields.length > 100 ? 'high' : 'medium',
+        });
+        hints.summary.wideTableCount++;
+      }
+
+      // Check fields
+      for (const field of table.fields || []) {
+        // Unstored calculations (fieldType is Calculated but not stored)
+        if (field.fieldType === 'Calculated') {
+          // Check if calc uses unstored patterns or has storage issues
+          const calcText = field.calcText?.toLowerCase() || '';
+          const hasExecuteSQL = calcText.includes('executesql');
+          const hasGetField = calcText.includes('getfield') || calcText.includes('evaluate');
+          const hasRelatedRecords = calcText.includes('list(') || calcText.includes('sum(') || calcText.includes('count(');
+
+          if (hasExecuteSQL) {
+            hints.executeSQLCalcs.push({
+              field: field.name,
+              table: table.name,
+              db: db.name,
+              calcText: field.calcText?.slice(0, 100) + (field.calcText?.length > 100 ? '...' : ''),
+            });
+          }
+
+          if (hasGetField || hasRelatedRecords || hasExecuteSQL) {
+            hints.unstoredCalcs.push({
+              field: field.name,
+              table: table.name,
+              db: db.name,
+              reason: hasExecuteSQL ? 'ExecuteSQL' : hasGetField ? 'Dynamic evaluation' : 'Aggregate function',
+              severity: hasExecuteSQL ? 'high' : 'medium',
+            });
+            hints.summary.unstoredCalcCount++;
+          }
+        }
+
+        // Container fields
+        if (field.dataType === 'Container') {
+          hints.containerFields.push({
+            field: field.name,
+            table: table.name,
+            db: db.name,
+            isGlobal: field.global || false,
+          });
+          hints.summary.containerFieldCount++;
+        }
+
+        // Global fields
+        if (field.global) {
+          hints.globalFields.push({
+            field: field.name,
+            table: table.name,
+            db: db.name,
+            dataType: field.dataType,
+          });
+          hints.summary.globalFieldCount++;
+        }
+      }
+    }
+
+    // Large scripts
+    for (const script of db.scripts || []) {
+      const stepCount = script.steps?.length || script.stepCount || 0;
+      if (stepCount > LARGE_SCRIPT_THRESHOLD) {
+        hints.largeScripts.push({
+          name: script.name,
+          db: db.name,
+          folder: script.folder,
+          stepCount,
+          severity: stepCount > 200 ? 'high' : 'medium',
+        });
+        hints.summary.largeScriptCount++;
+      }
+    }
+
+    // TOs with many relationships (relationship graph complexity)
+    const toRelCounts = {};
+    for (const rel of db.relationships || []) {
+      toRelCounts[rel.leftTable] = (toRelCounts[rel.leftTable] || 0) + 1;
+      toRelCounts[rel.rightTable] = (toRelCounts[rel.rightTable] || 0) + 1;
+    }
+
+    for (const [toName, count] of Object.entries(toRelCounts)) {
+      if (count > 10) {
+        hints.heavyRelationships.push({
+          toName,
+          db: db.name,
+          relationshipCount: count,
+          severity: count > 20 ? 'high' : 'medium',
+        });
+      }
+    }
+  }
+
+  // Sort by severity
+  hints.unstoredCalcs.sort((a, b) => (b.severity === 'high' ? 1 : 0) - (a.severity === 'high' ? 1 : 0));
+  hints.wideTables.sort((a, b) => b.fieldCount - a.fieldCount);
+  hints.largeScripts.sort((a, b) => b.stepCount - a.stepCount);
+
+  return hints;
 }
 
 export default parseXMLFiles;
