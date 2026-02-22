@@ -27,30 +27,30 @@ const useDarkMode = () => {
 };
 import parseXMLFiles, { analyzeDatabase } from './ddr-parser';
 
-// Modern light color palette
+// Modern light color palette with dark mode variants
 const C = {
-  table: { bg: 'bg-gradient-to-br from-blue-500 to-blue-600', light: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-600', hover: 'hover:bg-blue-100' },
-  field: { bg: 'bg-gradient-to-br from-cyan-500 to-cyan-600', light: 'bg-cyan-50', border: 'border-cyan-200', text: 'text-cyan-600', hover: 'hover:bg-cyan-100' },
-  to: { bg: 'bg-gradient-to-br from-violet-500 to-violet-600', light: 'bg-violet-50', border: 'border-violet-200', text: 'text-violet-600', hover: 'hover:bg-violet-100' },
-  layout: { bg: 'bg-gradient-to-br from-emerald-500 to-emerald-600', light: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-600', hover: 'hover:bg-emerald-100' },
-  script: { bg: 'bg-gradient-to-br from-amber-500 to-orange-500', light: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-600', hover: 'hover:bg-amber-100' },
-  rel: { bg: 'bg-gradient-to-br from-pink-500 to-rose-500', light: 'bg-pink-50', border: 'border-pink-200', text: 'text-pink-600', hover: 'hover:bg-pink-100' },
-  vl: { bg: 'bg-gradient-to-br from-yellow-500 to-amber-500', light: 'bg-yellow-50', border: 'border-yellow-200', text: 'text-yellow-600', hover: 'hover:bg-yellow-100' },
-  ext: { bg: 'bg-gradient-to-br from-red-500 to-red-600', light: 'bg-red-50', border: 'border-red-200', text: 'text-red-600', hover: 'hover:bg-red-100' },
-  cf: { bg: 'bg-gradient-to-br from-indigo-500 to-indigo-600', light: 'bg-indigo-50', border: 'border-indigo-200', text: 'text-indigo-600', hover: 'hover:bg-indigo-100' },
-  account: { bg: 'bg-gradient-to-br from-slate-500 to-slate-600', light: 'bg-slate-50', border: 'border-slate-200', text: 'text-slate-600', hover: 'hover:bg-slate-100' },
-  privset: { bg: 'bg-gradient-to-br from-orange-500 to-red-500', light: 'bg-orange-50', border: 'border-orange-200', text: 'text-orange-600', hover: 'hover:bg-orange-100' },
-  extpriv: { bg: 'bg-gradient-to-br from-teal-500 to-teal-600', light: 'bg-teal-50', border: 'border-teal-200', text: 'text-teal-600', hover: 'hover:bg-teal-100' },
+  table: { bg: 'bg-gradient-to-br from-blue-500 to-blue-600', light: 'bg-blue-50 dark:bg-blue-900/30', border: 'border-blue-200 dark:border-blue-800', text: 'text-blue-600 dark:text-blue-400', hover: 'hover:bg-blue-100 dark:hover:bg-blue-900/40' },
+  field: { bg: 'bg-gradient-to-br from-cyan-500 to-cyan-600', light: 'bg-cyan-50 dark:bg-cyan-900/30', border: 'border-cyan-200 dark:border-cyan-800', text: 'text-cyan-600 dark:text-cyan-400', hover: 'hover:bg-cyan-100 dark:hover:bg-cyan-900/40' },
+  to: { bg: 'bg-gradient-to-br from-violet-500 to-violet-600', light: 'bg-violet-50 dark:bg-violet-900/30', border: 'border-violet-200 dark:border-violet-800', text: 'text-violet-600 dark:text-violet-400', hover: 'hover:bg-violet-100 dark:hover:bg-violet-900/40' },
+  layout: { bg: 'bg-gradient-to-br from-emerald-500 to-emerald-600', light: 'bg-emerald-50 dark:bg-emerald-900/30', border: 'border-emerald-200 dark:border-emerald-800', text: 'text-emerald-600 dark:text-emerald-400', hover: 'hover:bg-emerald-100 dark:hover:bg-emerald-900/40' },
+  script: { bg: 'bg-gradient-to-br from-amber-500 to-orange-500', light: 'bg-amber-50 dark:bg-amber-900/30', border: 'border-amber-200 dark:border-amber-800', text: 'text-amber-600 dark:text-amber-400', hover: 'hover:bg-amber-100 dark:hover:bg-amber-900/40' },
+  rel: { bg: 'bg-gradient-to-br from-pink-500 to-rose-500', light: 'bg-pink-50 dark:bg-pink-900/30', border: 'border-pink-200 dark:border-pink-800', text: 'text-pink-600 dark:text-pink-400', hover: 'hover:bg-pink-100 dark:hover:bg-pink-900/40' },
+  vl: { bg: 'bg-gradient-to-br from-yellow-500 to-amber-500', light: 'bg-yellow-50 dark:bg-yellow-900/30', border: 'border-yellow-200 dark:border-yellow-800', text: 'text-yellow-600 dark:text-yellow-400', hover: 'hover:bg-yellow-100 dark:hover:bg-yellow-900/40' },
+  ext: { bg: 'bg-gradient-to-br from-red-500 to-red-600', light: 'bg-red-50 dark:bg-red-900/30', border: 'border-red-200 dark:border-red-800', text: 'text-red-600 dark:text-red-400', hover: 'hover:bg-red-100 dark:hover:bg-red-900/40' },
+  cf: { bg: 'bg-gradient-to-br from-indigo-500 to-indigo-600', light: 'bg-indigo-50 dark:bg-indigo-900/30', border: 'border-indigo-200 dark:border-indigo-800', text: 'text-indigo-600 dark:text-indigo-400', hover: 'hover:bg-indigo-100 dark:hover:bg-indigo-900/40' },
+  account: { bg: 'bg-gradient-to-br from-slate-500 to-slate-600', light: 'bg-slate-50 dark:bg-slate-800', border: 'border-slate-200 dark:border-slate-700', text: 'text-slate-600 dark:text-slate-300', hover: 'hover:bg-slate-100 dark:hover:bg-slate-700' },
+  privset: { bg: 'bg-gradient-to-br from-orange-500 to-red-500', light: 'bg-orange-50 dark:bg-orange-900/30', border: 'border-orange-200 dark:border-orange-800', text: 'text-orange-600 dark:text-orange-400', hover: 'hover:bg-orange-100 dark:hover:bg-orange-900/40' },
+  extpriv: { bg: 'bg-gradient-to-br from-teal-500 to-teal-600', light: 'bg-teal-50 dark:bg-teal-900/30', border: 'border-teal-200 dark:border-teal-800', text: 'text-teal-600 dark:text-teal-400', hover: 'hover:bg-teal-100 dark:hover:bg-teal-900/40' },
 };
 
-// Data type colors - light theme
+// Data type colors - light and dark theme
 const dtColors = {
-  'Text': 'bg-blue-100 text-blue-700 border border-blue-200',
-  'Number': 'bg-violet-100 text-violet-700 border border-violet-200',
-  'Date': 'bg-emerald-100 text-emerald-700 border border-emerald-200',
-  'Time': 'bg-teal-100 text-teal-700 border border-teal-200',
-  'Timestamp': 'bg-cyan-100 text-cyan-700 border border-cyan-200',
-  'Container': 'bg-pink-100 text-pink-700 border border-pink-200',
+  'Text': 'bg-blue-100 text-blue-700 border border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800',
+  'Number': 'bg-violet-100 text-violet-700 border border-violet-200 dark:bg-violet-900/30 dark:text-violet-400 dark:border-violet-800',
+  'Date': 'bg-emerald-100 text-emerald-700 border border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800',
+  'Time': 'bg-teal-100 text-teal-700 border border-teal-200 dark:bg-teal-900/30 dark:text-teal-400 dark:border-teal-800',
+  'Timestamp': 'bg-cyan-100 text-cyan-700 border border-cyan-200 dark:bg-cyan-900/30 dark:text-cyan-400 dark:border-cyan-800',
+  'Container': 'bg-pink-100 text-pink-700 border border-pink-200 dark:bg-pink-900/30 dark:text-pink-400 dark:border-pink-800',
 };
 
 // Simple UI components
@@ -67,7 +67,7 @@ const Icon = ({ type, size = 14, className = '' }) => {
 };
 
 const NavLink = ({ type, name, onClick, small }) => (
-  <button onClick={onClick} className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md transition-all ${C[type]?.light || 'bg-gray-100'} ${C[type]?.text || 'text-gray-600'} hover:opacity-80 ${small ? 'text-xs' : 'text-sm'}`}>
+  <button onClick={onClick} className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md transition-all ${C[type]?.light || 'bg-gray-100 dark:bg-gray-700'} ${C[type]?.text || 'text-gray-600 dark:text-gray-300'} hover:opacity-80 ${small ? 'text-xs' : 'text-sm'}`}>
     <Icon type={type} size={small ? 10 : 12} />
     <span className="truncate max-w-[180px]">{name}</span>
   </button>
@@ -77,14 +77,14 @@ const Section = ({ title, count, icon, color = 'field', defaultOpen = true, chil
   const [open, setOpen] = useState(defaultOpen);
   if (count === 0 && !children) return null;
   return (
-    <div className="bg-white border border-gray-200 rounded-xl mb-3 overflow-hidden shadow-sm">
-      <button onClick={() => setOpen(!open)} className="w-full px-4 py-3 flex items-center gap-3 hover:bg-gray-50 text-left transition-colors">
-        <span className="text-gray-400">{open ? <ChevronDown size={14} /> : <ChevronRight size={14} />}</span>
+    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl mb-3 overflow-hidden shadow-sm">
+      <button onClick={() => setOpen(!open)} className="w-full px-4 py-3 flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-700 text-left transition-colors">
+        <span className="text-gray-400 dark:text-gray-500">{open ? <ChevronDown size={14} /> : <ChevronRight size={14} />}</span>
         {icon}
-        <span className="font-medium text-gray-700 flex-1 text-sm">{title}</span>
+        <span className="font-medium text-gray-700 dark:text-gray-200 flex-1 text-sm">{title}</span>
         {count !== undefined && <Badge color={color} size="xs">{count}</Badge>}
       </button>
-      {open && children && <div className="border-t border-gray-100 bg-gray-50/50 max-h-64 overflow-auto">{children}</div>}
+      {open && children && <div className="border-t border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/30 max-h-64 overflow-auto">{children}</div>}
     </div>
   );
 };
@@ -99,12 +99,12 @@ const FieldRow = ({ field, tableName, dbName, reverseRefs, onNav }) => {
   const refCount = inScripts.length + onLayouts.length + inCalcs.length;
 
   return (
-    <div className={`border-b border-gray-100 transition-colors ${expanded ? 'bg-white' : 'hover:bg-gray-50'}`}>
+    <div className={`border-b border-gray-100 dark:border-gray-700 transition-colors ${expanded ? 'bg-white dark:bg-gray-800' : 'hover:bg-gray-50 dark:hover:bg-gray-700'}`}>
       <div className="px-4 py-3 flex items-start gap-3 cursor-pointer" onClick={() => setExpanded(!expanded)}>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="font-mono text-sm font-medium text-gray-800">{field.name}</span>
-            <span className={`text-[10px] px-2 py-0.5 rounded-full ${dtColors[field.dataType] || 'bg-gray-100 text-gray-600'}`}>
+            <span className="font-mono text-sm font-medium text-gray-800 dark:text-gray-100">{field.name}</span>
+            <span className={`text-[10px] px-2 py-0.5 rounded-full ${dtColors[field.dataType] || 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300'}`}>
               {field.dataType}
             </span>
             {field.fieldType !== 'Normal' && <Badge color="script" size="xs">{field.fieldType}</Badge>}
@@ -112,74 +112,74 @@ const FieldRow = ({ field, tableName, dbName, reverseRefs, onNav }) => {
             {field.indexed && <Badge color="to" size="xs">Indexed</Badge>}
           </div>
           <div className="flex flex-wrap gap-2 mt-2 text-[10px]">
-            {field.autoEnter && <span className="bg-violet-100 text-violet-700 px-2 py-0.5 rounded-full border border-violet-200">Auto: {field.autoEnter}</span>}
-            {field.validation && <span className="bg-red-100 text-red-700 px-2 py-0.5 rounded-full border border-red-200">Valid: {field.validation}</span>}
-            {field.repetitions && <span className="bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full border border-amber-200">Reps: {field.repetitions}</span>}
+            {field.autoEnter && <span className="bg-violet-100 text-violet-700 px-2 py-0.5 rounded-full border border-violet-200 dark:bg-violet-900/30 dark:text-violet-400 dark:border-violet-800">Auto: {field.autoEnter}</span>}
+            {field.validation && <span className="bg-red-100 text-red-700 px-2 py-0.5 rounded-full border border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800">Valid: {field.validation}</span>}
+            {field.repetitions && <span className="bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full border border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800">Reps: {field.repetitions}</span>}
           </div>
         </div>
-        <div className="flex items-center gap-2 text-xs text-gray-400">
-          {refCount > 0 && <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded-full">{refCount} refs</span>}
-          <span className="text-gray-400">{expanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}</span>
+        <div className="flex items-center gap-2 text-xs text-gray-400 dark:text-gray-500">
+          {refCount > 0 && <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded-full dark:bg-gray-700 dark:text-gray-300">{refCount} refs</span>}
+          <span className="text-gray-400 dark:text-gray-500">{expanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}</span>
         </div>
       </div>
 
       {expanded && (
-        <div className="px-4 pb-4 space-y-3 bg-gray-50 border-t border-gray-100">
-          {field.comment && <div className="text-xs text-gray-500 italic pt-3">{field.comment}</div>}
+        <div className="px-4 pb-4 space-y-3 bg-gray-50 dark:bg-gray-900/50 border-t border-gray-100 dark:border-gray-700">
+          {field.comment && <div className="text-xs text-gray-500 dark:text-gray-400 italic pt-3">{field.comment}</div>}
 
           {field.calcText && (
             <div className="pt-2">
-              <div className="text-[10px] font-medium text-gray-500 mb-1.5 uppercase tracking-wide">Calculation</div>
-              <pre className="text-[11px] bg-white p-3 rounded-lg overflow-x-auto font-mono text-cyan-700 border border-gray-200">{field.calcText}</pre>
+              <div className="text-[10px] font-medium text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wide">Calculation</div>
+              <pre className="text-[11px] bg-white dark:bg-gray-800 p-3 rounded-lg overflow-x-auto font-mono text-cyan-700 dark:text-cyan-400 border border-gray-200 dark:border-gray-700">{field.calcText}</pre>
             </div>
           )}
 
           {field.autoEnterCalc && (
             <div className="pt-2">
-              <div className="text-[10px] font-medium text-gray-500 mb-1.5 uppercase tracking-wide">Auto-Enter Calc</div>
-              <pre className="text-[11px] bg-violet-50 p-3 rounded-lg overflow-x-auto font-mono text-violet-700 border border-violet-200">{field.autoEnterCalc}</pre>
+              <div className="text-[10px] font-medium text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wide">Auto-Enter Calc</div>
+              <pre className="text-[11px] bg-violet-50 dark:bg-violet-900/20 p-3 rounded-lg overflow-x-auto font-mono text-violet-700 dark:text-violet-400 border border-violet-200 dark:border-violet-800">{field.autoEnterCalc}</pre>
             </div>
           )}
 
           {field.validationCalc && (
             <div className="pt-2">
-              <div className="text-[10px] font-medium text-gray-500 mb-1.5 uppercase tracking-wide">Validation Calc</div>
-              <pre className="text-[11px] bg-red-50 p-3 rounded-lg overflow-x-auto font-mono text-red-700 border border-red-200">{field.validationCalc}</pre>
+              <div className="text-[10px] font-medium text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wide">Validation Calc</div>
+              <pre className="text-[11px] bg-red-50 dark:bg-red-900/20 p-3 rounded-lg overflow-x-auto font-mono text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800">{field.validationCalc}</pre>
             </div>
           )}
 
           {inScripts.length > 0 && (
             <div className="pt-2">
-              <div className="text-[10px] font-medium text-gray-500 mb-2 uppercase tracking-wide">Used in {inScripts.length} Script(s)</div>
+              <div className="text-[10px] font-medium text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wide">Used in {inScripts.length} Script(s)</div>
               <div className="flex flex-wrap gap-1.5">
                 {inScripts.slice(0, 10).map((ref, i) => (
                   <NavLink key={i} type="script" name={ref.script} small onClick={() => onNav('script', ref.script, ref.db)} />
                 ))}
-                {inScripts.length > 10 && <span className="text-xs text-gray-500 self-center">+{inScripts.length - 10} more</span>}
+                {inScripts.length > 10 && <span className="text-xs text-gray-500 dark:text-gray-400 self-center">+{inScripts.length - 10} more</span>}
               </div>
             </div>
           )}
 
           {onLayouts.length > 0 && (
             <div className="pt-2">
-              <div className="text-[10px] font-medium text-gray-500 mb-2 uppercase tracking-wide">On {onLayouts.length} Layout(s)</div>
+              <div className="text-[10px] font-medium text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wide">On {onLayouts.length} Layout(s)</div>
               <div className="flex flex-wrap gap-1.5">
                 {onLayouts.slice(0, 10).map((ref, i) => (
                   <NavLink key={i} type="layout" name={ref.layout} small onClick={() => onNav('layout', ref.layout, ref.db)} />
                 ))}
-                {onLayouts.length > 10 && <span className="text-xs text-gray-500 self-center">+{onLayouts.length - 10} more</span>}
+                {onLayouts.length > 10 && <span className="text-xs text-gray-500 dark:text-gray-400 self-center">+{onLayouts.length - 10} more</span>}
               </div>
             </div>
           )}
 
           {inCalcs.length > 0 && (
             <div className="pt-2">
-              <div className="text-[10px] font-medium text-gray-500 mb-2 uppercase tracking-wide">Referenced in {inCalcs.length} Calc Field(s)</div>
+              <div className="text-[10px] font-medium text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wide">Referenced in {inCalcs.length} Calc Field(s)</div>
               <div className="flex flex-wrap gap-1.5">
                 {inCalcs.slice(0, 10).map((ref, i) => (
-                  <span key={i} className="text-[10px] bg-cyan-100 text-cyan-700 px-2 py-1 rounded-full border border-cyan-200">{ref.table}.{ref.field}</span>
+                  <span key={i} className="text-[10px] bg-cyan-100 text-cyan-700 px-2 py-1 rounded-full border border-cyan-200 dark:bg-cyan-900/30 dark:text-cyan-400 dark:border-cyan-800">{ref.table}.{ref.field}</span>
                 ))}
-                {inCalcs.length > 10 && <span className="text-xs text-gray-500 self-center">+{inCalcs.length - 10} more</span>}
+                {inCalcs.length > 10 && <span className="text-xs text-gray-500 dark:text-gray-400 self-center">+{inCalcs.length - 10} more</span>}
               </div>
             </div>
           )}
@@ -237,17 +237,17 @@ const TableDetail = ({ table, dbName, reverseRefs, data, onNav }) => {
 
   return (
     <div className="h-full flex flex-col">
-      <div className="p-5 border-b border-gray-200 bg-white">
+      <div className="p-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
         <div className="flex items-center gap-3 mb-3">
           <div className={`w-10 h-10 ${C.table.bg} rounded-xl flex items-center justify-center shadow-lg`}>
             <Table size={18} className="text-white" />
           </div>
           <div>
-            <h2 className="font-semibold text-gray-800 text-lg">{table.name}</h2>
-            <div className="text-sm text-gray-500">{table.fieldCount} fields · {table.records} records</div>
+            <h2 className="font-semibold text-gray-800 dark:text-gray-100 text-lg">{table.name}</h2>
+            <div className="text-sm text-gray-500 dark:text-gray-400">{table.fieldCount} fields · {table.records} records</div>
           </div>
         </div>
-        {table.comment && <p className="text-sm text-gray-500 italic">{table.comment}</p>}
+        {table.comment && <p className="text-sm text-gray-500 dark:text-gray-400 italic">{table.comment}</p>}
 
         <div className="flex gap-2 mt-4">
           <div className="relative flex-1">
@@ -257,13 +257,13 @@ const TableDetail = ({ table, dbName, reverseRefs, data, onNav }) => {
               placeholder="Filter fields..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 text-sm bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 text-gray-700 placeholder-gray-400"
+              className="w-full pl-9 pr-3 py-2 text-sm bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 text-gray-700 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500"
             />
           </div>
           <select
             value={typeFilter}
             onChange={e => setTypeFilter(e.target.value)}
-            className="text-sm bg-white border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500/30 text-gray-700"
+            className="text-sm bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500/30 text-gray-700 dark:text-gray-200"
           >
             <option value="">All Types</option>
             {dataTypes.map(t => <option key={t} value={t}>{t}</option>)}
@@ -274,12 +274,12 @@ const TableDetail = ({ table, dbName, reverseRefs, data, onNav }) => {
       <div className="flex-1 overflow-auto">
         {/* Table Occurrences section */}
         {totalTOs > 0 && (
-          <div className="bg-gray-50 border-b border-gray-200">
+          <div className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
             <Section title="Table Occurrences" count={totalTOs} icon={<Layers size={14} className="text-violet-500" />} color="to" defaultOpen={true}>
               <div className="p-3 space-y-3">
                 {allTOs.local.length > 0 && (
                   <div>
-                    <div className="text-[10px] font-medium text-gray-500 uppercase tracking-wide mb-2">
+                    <div className="text-[10px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
                       In {dbName} ({allTOs.local.length})
                     </div>
                     <div className="flex flex-wrap gap-1.5">
@@ -291,7 +291,7 @@ const TableDetail = ({ table, dbName, reverseRefs, data, onNav }) => {
                 )}
                 {allTOs.external.length > 0 && (
                   <div>
-                    <div className="text-[10px] font-medium text-red-500 uppercase tracking-wide mb-2 flex items-center gap-1.5">
+                    <div className="text-[10px] font-medium text-red-500 dark:text-red-400 uppercase tracking-wide mb-2 flex items-center gap-1.5">
                       <ExternalLink size={10} />
                       In Other Files ({allTOs.external.length})
                     </div>
@@ -299,7 +299,7 @@ const TableDetail = ({ table, dbName, reverseRefs, data, onNav }) => {
                       {allTOs.external.map((r, i) => (
                         <div key={i} className="flex items-center gap-1.5">
                           <NavLink type="to" name={r.toName} small onClick={() => onNav('to', r.toName, r.toDb)} />
-                          <span className="text-[10px] text-gray-400">({r.toDb})</span>
+                          <span className="text-[10px] text-gray-400 dark:text-gray-500">({r.toDb})</span>
                         </div>
                       ))}
                     </div>
@@ -311,7 +311,7 @@ const TableDetail = ({ table, dbName, reverseRefs, data, onNav }) => {
         )}
 
         {/* Fields */}
-        <div className="bg-white">
+        <div className="bg-white dark:bg-gray-800">
           {filteredFields.map((field, i) => (
             <FieldRow key={i} field={field} tableName={table.name} dbName={dbName} reverseRefs={reverseRefs} onNav={onNav} />
           ))}
@@ -333,19 +333,19 @@ const ScriptDetail = ({ script, dbName, reverseRefs, data, onNav }) => {
 
   return (
     <div className="h-full flex flex-col overflow-hidden">
-      <div className="p-5 border-b border-gray-200 bg-white">
+      <div className="p-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
         <div className="flex items-center gap-3">
           <div className={`w-10 h-10 ${C.script.bg} rounded-xl flex items-center justify-center shadow-lg`}>
             <Code size={18} className="text-white" />
           </div>
           <div className="min-w-0 flex-1">
-            <h2 className="font-semibold text-gray-800 text-lg truncate">{script.name}</h2>
-            <div className="text-sm text-gray-500">{script.stepCount || script.steps?.length || 0} steps</div>
+            <h2 className="font-semibold text-gray-800 dark:text-gray-100 text-lg truncate">{script.name}</h2>
+            <div className="text-sm text-gray-500 dark:text-gray-400">{script.stepCount || script.steps?.length || 0} steps</div>
           </div>
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto p-4 space-y-2 bg-gray-50">
+      <div className="flex-1 overflow-auto p-4 space-y-2 bg-gray-50 dark:bg-gray-900">
         <Section title="Called By" count={callers.length} icon={<Play size={14} className="text-amber-500" />} color="script">
           <div className="p-3 flex flex-wrap gap-1.5">
             {callers.map((c, i) => <NavLink key={i} type="script" name={c.script} small onClick={() => onNav('script', c.script, c.db)} />)}
@@ -419,15 +419,15 @@ const ScriptDetail = ({ script, dbName, reverseRefs, data, onNav }) => {
         )}
 
         {script.steps?.length > 0 && (
-          <Section title="Steps" count={script.steps.length} icon={<List size={14} className="text-gray-500" />} color="field" defaultOpen={false}>
+          <Section title="Steps" count={script.steps.length} icon={<List size={14} className="text-gray-500 dark:text-gray-400" />} color="field" defaultOpen={false}>
             <div className="p-3 text-xs space-y-0.5 max-h-[32rem] overflow-auto">
               {script.steps.map((step, i) => (
-                <div key={i} className={`py-1.5 px-2 rounded ${!step.enabled ? 'opacity-50 bg-gray-100' : 'hover:bg-white'}`}>
+                <div key={i} className={`py-1.5 px-2 rounded ${!step.enabled ? 'opacity-50 bg-gray-100 dark:bg-gray-700' : 'hover:bg-white dark:hover:bg-gray-700'}`}>
                   <div className="flex items-start gap-2">
-                    <span className="text-gray-400 w-6 text-right flex-shrink-0 font-mono">{step.index || i+1}</span>
+                    <span className="text-gray-400 dark:text-gray-500 w-6 text-right flex-shrink-0 font-mono">{step.index || i+1}</span>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className={`font-medium ${!step.enabled ? 'text-gray-400 line-through' : 'text-gray-700'}`}>{step.name}</span>
+                        <span className={`font-medium ${!step.enabled ? 'text-gray-400 dark:text-gray-500 line-through' : 'text-gray-700 dark:text-gray-200'}`}>{step.name}</span>
                         {step.scriptRef && (
                           <NavLink type={step.externalFile ? 'ext' : 'script'} name={step.externalFile ? `${step.externalFile}::${step.scriptRef}` : step.scriptRef} small
                             onClick={() => !step.externalFile && onNav('script', step.scriptRef, dbName)} />
@@ -438,37 +438,37 @@ const ScriptDetail = ({ script, dbName, reverseRefs, data, onNav }) => {
                       </div>
                       {/* Show step details based on type */}
                       {step.text && step.text !== step.name && (
-                        <div className="text-[11px] text-gray-500 mt-0.5 font-mono truncate" title={step.text}>{step.text}</div>
+                        <div className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5 font-mono truncate" title={step.text}>{step.text}</div>
                       )}
                       {step.targetField && (
-                        <div className="text-[11px] text-cyan-600 mt-0.5">→ {step.targetField}</div>
+                        <div className="text-[11px] text-cyan-600 dark:text-cyan-400 mt-0.5">→ {step.targetField}</div>
                       )}
                       {step.variableName && (
-                        <div className="text-[11px] text-violet-600 mt-0.5">
+                        <div className="text-[11px] text-violet-600 dark:text-violet-400 mt-0.5">
                           {step.variableName}{step.repetition && ` [${step.repetition}]`}
-                          {step.calculation && <span className="text-gray-400"> = </span>}
-                          {step.calculation && <span className="text-gray-600 font-mono">{step.calculation.length > 60 ? step.calculation.slice(0, 60) + '...' : step.calculation}</span>}
+                          {step.calculation && <span className="text-gray-400 dark:text-gray-500"> = </span>}
+                          {step.calculation && <span className="text-gray-600 dark:text-gray-300 font-mono">{step.calculation.length > 60 ? step.calculation.slice(0, 60) + '...' : step.calculation}</span>}
                         </div>
                       )}
                       {step.condition && (
-                        <div className="text-[11px] text-amber-600 mt-0.5 font-mono">
+                        <div className="text-[11px] text-amber-600 dark:text-amber-400 mt-0.5 font-mono">
                           {step.condition.length > 80 ? step.condition.slice(0, 80) + '...' : step.condition}
                         </div>
                       )}
                       {step.url && (
-                        <div className="text-[11px] text-blue-600 mt-0.5 font-mono truncate">{step.url}</div>
+                        <div className="text-[11px] text-blue-600 dark:text-blue-400 mt-0.5 font-mono truncate">{step.url}</div>
                       )}
                       {step.sortFields && (
-                        <div className="text-[11px] text-gray-500 mt-0.5">Sort by: {step.sortFields.join(', ')}</div>
+                        <div className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">Sort by: {step.sortFields.join(', ')}</div>
                       )}
                       {step.title && (
-                        <div className="text-[11px] text-gray-500 mt-0.5">Title: {step.title}</div>
+                        <div className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">Title: {step.title}</div>
                       )}
                       {step.windowName && (
-                        <div className="text-[11px] text-gray-500 mt-0.5">Window: {step.windowName}</div>
+                        <div className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">Window: {step.windowName}</div>
                       )}
                       {step.recordAction && (
-                        <div className="text-[11px] text-gray-500 mt-0.5">{step.recordAction}</div>
+                        <div className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">{step.recordAction}</div>
                       )}
                     </div>
                   </div>
@@ -488,19 +488,19 @@ const LayoutDetail = ({ layout, dbName, reverseRefs, onNav }) => {
 
   return (
     <div className="h-full flex flex-col overflow-hidden">
-      <div className="p-5 border-b border-gray-200 bg-white">
+      <div className="p-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
         <div className="flex items-center gap-3">
           <div className={`w-10 h-10 ${C.layout.bg} rounded-xl flex items-center justify-center shadow-lg`}>
             <Layout size={18} className="text-white" />
           </div>
           <div>
-            <h2 className="font-semibold text-gray-800 text-lg">{layout.name}</h2>
-            {layout.baseTable && <div className="text-sm text-gray-500">Based on: {layout.baseTable}</div>}
+            <h2 className="font-semibold text-gray-800 dark:text-gray-100 text-lg">{layout.name}</h2>
+            {layout.baseTable && <div className="text-sm text-gray-500 dark:text-gray-400">Based on: {layout.baseTable}</div>}
           </div>
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto p-4 space-y-2 bg-gray-50">
+      <div className="flex-1 overflow-auto p-4 space-y-2 bg-gray-50 dark:bg-gray-900">
         {layout.baseTable && (
           <Section title="Base Table Occurrence" count={1} icon={<Layers size={14} className="text-violet-500" />} color="to">
             <div className="p-3">
@@ -515,10 +515,10 @@ const LayoutDetail = ({ layout, dbName, reverseRefs, onNav }) => {
               {/* Layout-level triggers */}
               {layout.triggers.filter(t => t.level === 'layout' || !t.level).length > 0 && (
                 <div className="mb-3">
-                  <div className="text-[10px] font-medium text-gray-500 uppercase mb-1.5">Layout Triggers</div>
+                  <div className="text-[10px] font-medium text-gray-500 dark:text-gray-400 uppercase mb-1.5">Layout Triggers</div>
                   {layout.triggers.filter(t => t.level === 'layout' || !t.level).map((t, i) => (
                     <div key={i} className="flex items-center gap-3 text-sm mb-1">
-                      <span className="text-gray-600 text-xs bg-yellow-100 px-2 py-1 rounded border border-yellow-200">{t.type}</span>
+                      <span className="text-gray-600 dark:text-gray-300 text-xs bg-yellow-100 dark:bg-yellow-900/30 px-2 py-1 rounded border border-yellow-200 dark:border-yellow-800">{t.type}</span>
                       <NavLink type="script" name={t.script} small onClick={() => onNav('script', t.script, dbName)} />
                     </div>
                   ))}
@@ -527,12 +527,12 @@ const LayoutDetail = ({ layout, dbName, reverseRefs, onNav }) => {
               {/* Field-level triggers */}
               {layout.triggers.filter(t => t.level === 'field').length > 0 && (
                 <div>
-                  <div className="text-[10px] font-medium text-gray-500 uppercase mb-1.5">Field Triggers</div>
+                  <div className="text-[10px] font-medium text-gray-500 dark:text-gray-400 uppercase mb-1.5">Field Triggers</div>
                   {layout.triggers.filter(t => t.level === 'field').map((t, i) => (
                     <div key={i} className="flex items-center gap-3 text-sm mb-1">
-                      <span className="text-gray-600 text-xs bg-cyan-100 px-2 py-1 rounded border border-cyan-200">{t.type}</span>
+                      <span className="text-gray-600 dark:text-gray-300 text-xs bg-cyan-100 dark:bg-cyan-900/30 px-2 py-1 rounded border border-cyan-200 dark:border-cyan-800">{t.type}</span>
                       <NavLink type="script" name={t.script} small onClick={() => onNav('script', t.script, dbName)} />
-                      <span className="text-[10px] text-gray-400">on {t.field}</span>
+                      <span className="text-[10px] text-gray-400 dark:text-gray-500">on {t.field}</span>
                     </div>
                   ))}
                 </div>
@@ -590,14 +590,14 @@ const TODetail = ({ to, dbName, reverseRefs, data, onNav }) => {
 
   return (
     <div className="h-full flex flex-col overflow-hidden">
-      <div className="p-5 border-b border-gray-200 bg-white">
+      <div className="p-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
         <div className="flex items-center gap-3">
           <div className={`w-10 h-10 ${to.externalFile ? C.ext.bg : C.to.bg} rounded-xl flex items-center justify-center shadow-lg`}>
             <Layers size={18} className="text-white" />
           </div>
           <div>
-            <h2 className="font-semibold text-gray-800 text-lg">{to.name}</h2>
-            <div className="text-sm text-gray-500 flex items-center gap-2">
+            <h2 className="font-semibold text-gray-800 dark:text-gray-100 text-lg">{to.name}</h2>
+            <div className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-2">
               Base: {to.baseTable}
               {to.externalFile && <Badge color="ext" size="xs">External: {to.externalFile}</Badge>}
             </div>
@@ -605,14 +605,14 @@ const TODetail = ({ to, dbName, reverseRefs, data, onNav }) => {
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto p-4 space-y-2 bg-gray-50">
+      <div className="flex-1 overflow-auto p-4 space-y-2 bg-gray-50 dark:bg-gray-900">
         {to.externalFile && (
-          <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-2">
-            <div className="flex items-center gap-2 text-sm text-red-700">
+          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4 mb-2">
+            <div className="flex items-center gap-2 text-sm text-red-700 dark:text-red-400">
               <ExternalLink size={14} />
               <span className="font-medium">Shadow TO</span>
             </div>
-            <p className="text-xs text-red-600 mt-1">
+            <p className="text-xs text-red-600 dark:text-red-400 mt-1">
               This table occurrence points to <strong>{to.baseTable}</strong> in external file <strong>{to.externalFile}</strong>
             </p>
           </div>
@@ -646,7 +646,7 @@ const TODetail = ({ to, dbName, reverseRefs, data, onNav }) => {
           <div className="p-3 space-y-2 text-sm">
             {rels.map((r, i) => (
               <div key={i} className="flex items-center gap-3">
-                <span className={`px-2 py-1 rounded text-xs ${r.side === 'left' ? 'bg-blue-100 text-blue-700' : 'bg-emerald-100 text-emerald-700'}`}>
+                <span className={`px-2 py-1 rounded text-xs ${r.side === 'left' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'}`}>
                   {r.side}
                 </span>
                 <NavLink type="rel" name={r.relationship} small onClick={() => onNav('rel', r.relationship, r.db)} />
@@ -663,29 +663,29 @@ const TODetail = ({ to, dbName, reverseRefs, data, onNav }) => {
 const RelDetail = ({ rel, dbName, onNav }) => {
   return (
     <div className="h-full flex flex-col overflow-hidden">
-      <div className="p-5 border-b border-gray-200 bg-white">
+      <div className="p-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
         <div className="flex items-center gap-3">
           <div className={`w-10 h-10 ${C.rel.bg} rounded-xl flex items-center justify-center shadow-lg`}>
             <GitBranch size={18} className="text-white" />
           </div>
           <div>
-            <h2 className="font-semibold text-gray-800 text-lg">Relationship</h2>
-            <div className="text-sm text-gray-500">ID: {rel.id}</div>
+            <h2 className="font-semibold text-gray-800 dark:text-gray-100 text-lg">Relationship</h2>
+            <div className="text-sm text-gray-500 dark:text-gray-400">ID: {rel.id}</div>
           </div>
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto p-5 bg-gray-50">
-        <div className="flex items-center justify-between gap-6 p-5 bg-white rounded-xl border border-gray-200 shadow-sm">
+      <div className="flex-1 overflow-auto p-5 bg-gray-50 dark:bg-gray-900">
+        <div className="flex items-center justify-between gap-6 p-5 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
           <div className="text-center">
             <NavLink type="to" name={rel.leftTable} onClick={() => onNav('to', rel.leftTable, dbName)} />
           </div>
           <div className="flex-1 flex flex-col items-center gap-2">
             {rel.predicates?.map((p, i) => (
-              <div key={i} className="text-sm bg-gray-50 border border-gray-200 rounded-lg px-4 py-2 text-center">
-                <div className="font-mono text-gray-700">{p.leftField} <span className="text-pink-500">{p.type === 'Equal' ? '=' : p.type}</span> {p.rightField}</div>
+              <div key={i} className="text-sm bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-4 py-2 text-center">
+                <div className="font-mono text-gray-700 dark:text-gray-200">{p.leftField} <span className="text-pink-500 dark:text-pink-400">{p.type === 'Equal' ? '=' : p.type}</span> {p.rightField}</div>
                 {(p.cascadeCreate || p.cascadeDelete) && (
-                  <div className="text-[11px] text-gray-500 mt-1">
+                  <div className="text-[11px] text-gray-500 dark:text-gray-400 mt-1">
                     {p.cascadeCreate && <span className="mr-3">↳ Create</span>}
                     {p.cascadeDelete && <span>↳ Delete</span>}
                   </div>
@@ -713,30 +713,30 @@ const AccountDetail = ({ account, dbName, data }) => {
 
   return (
     <div className="h-full flex flex-col overflow-hidden">
-      <div className="p-5 border-b border-gray-200 bg-white">
+      <div className="p-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
         <div className="flex items-center gap-3">
           <div className={`w-10 h-10 ${C.account.bg} rounded-xl flex items-center justify-center shadow-lg`}>
             <User size={18} className="text-white" />
           </div>
           <div>
-            <h2 className="font-semibold text-gray-800 text-lg">{account.name}</h2>
-            <div className="text-sm text-gray-500 flex items-center gap-2">
+            <h2 className="font-semibold text-gray-800 dark:text-gray-100 text-lg">{account.name}</h2>
+            <div className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-2">
               <Badge color={account.status === 'Active' ? 'layout' : 'ext'} size="xs">{account.status}</Badge>
-              {account.managedBy && <span className="text-gray-400">· {account.managedBy}</span>}
+              {account.managedBy && <span className="text-gray-400 dark:text-gray-500">· {account.managedBy}</span>}
             </div>
           </div>
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto p-4 space-y-3 bg-gray-50">
+      <div className="flex-1 overflow-auto p-4 space-y-3 bg-gray-50 dark:bg-gray-900">
         {/* Security warnings */}
         {account.emptyPassword && (
-          <div className="bg-red-50 border border-red-200 rounded-xl p-4">
-            <div className="flex items-center gap-2 text-sm text-red-700">
+          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4">
+            <div className="flex items-center gap-2 text-sm text-red-700 dark:text-red-400">
               <AlertTriangle size={14} />
               <span className="font-medium">Empty Password</span>
             </div>
-            <p className="text-xs text-red-600 mt-1">This account has no password set.</p>
+            <p className="text-xs text-red-600 dark:text-red-400 mt-1">This account has no password set.</p>
           </div>
         )}
 
@@ -799,26 +799,26 @@ const PrivSetDetail = ({ privset, dbName, data }) => {
 
   return (
     <div className="h-full flex flex-col overflow-hidden">
-      <div className="p-5 border-b border-gray-200 bg-white">
+      <div className="p-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
         <div className="flex items-center gap-3">
           <div className={`w-10 h-10 ${C.privset.bg} rounded-xl flex items-center justify-center shadow-lg`}>
             <KeyRound size={18} className="text-white" />
           </div>
           <div>
-            <h2 className="font-semibold text-gray-800 text-lg">{privset.name}</h2>
-            {privset.comment && <div className="text-sm text-gray-500">{privset.comment}</div>}
+            <h2 className="font-semibold text-gray-800 dark:text-gray-100 text-lg">{privset.name}</h2>
+            {privset.comment && <div className="text-sm text-gray-500 dark:text-gray-400">{privset.comment}</div>}
           </div>
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto p-4 space-y-3 bg-gray-50">
+      <div className="flex-1 overflow-auto p-4 space-y-3 bg-gray-50 dark:bg-gray-900">
         {/* Access Levels */}
         <Section title="Access Levels" icon={<Shield size={14} className="text-orange-500" />} color="privset" defaultOpen={true}>
           <div className="p-3 space-y-2">
             {accessLevels.map((al, i) => (
-              <div key={i} className="flex items-center justify-between py-1.5 border-b border-gray-100 last:border-0">
-                <div className="flex items-center gap-2 text-sm text-gray-700">
-                  <al.icon size={14} className="text-gray-400" />
+              <div key={i} className="flex items-center justify-between py-1.5 border-b border-gray-100 dark:border-gray-700 last:border-0">
+                <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200">
+                  <al.icon size={14} className="text-gray-400 dark:text-gray-500" />
                   {al.label}
                 </div>
                 <div className="flex items-center gap-2">
@@ -888,25 +888,25 @@ const ExtPrivDetail = ({ extpriv, dbName, data }) => {
 
   return (
     <div className="h-full flex flex-col overflow-hidden">
-      <div className="p-5 border-b border-gray-200 bg-white">
+      <div className="p-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
         <div className="flex items-center gap-3">
           <div className={`w-10 h-10 ${C.extpriv.bg} rounded-xl flex items-center justify-center shadow-lg`}>
             <ShieldCheck size={18} className="text-white" />
           </div>
           <div>
-            <h2 className="font-semibold text-gray-800 text-lg">{extpriv.name}</h2>
-            {extpriv.comment && <div className="text-sm text-gray-500">{extpriv.comment}</div>}
+            <h2 className="font-semibold text-gray-800 dark:text-gray-100 text-lg">{extpriv.name}</h2>
+            {extpriv.comment && <div className="text-sm text-gray-500 dark:text-gray-400">{extpriv.comment}</div>}
           </div>
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto p-4 space-y-3 bg-gray-50">
+      <div className="flex-1 overflow-auto p-4 space-y-3 bg-gray-50 dark:bg-gray-900">
         {/* Assigned Privilege Sets */}
         <Section title="Assigned to Privilege Sets" count={extpriv.privilegeSets?.length || 0} icon={<KeyRound size={14} className="text-orange-500" />} color="privset">
           <div className="p-3 flex flex-wrap gap-1.5">
             {(extpriv.privilegeSets || []).length > 0 ? extpriv.privilegeSets.map((ps, i) => (
               <Badge key={i} color="privset">{ps}</Badge>
-            )) : <span className="text-sm text-gray-400">Not assigned to any privilege sets</span>}
+            )) : <span className="text-sm text-gray-400 dark:text-gray-500">Not assigned to any privilege sets</span>}
           </div>
         </Section>
 
@@ -915,9 +915,9 @@ const ExtPrivDetail = ({ extpriv, dbName, data }) => {
           <Section title="Privilege Set Details" icon={<Shield size={14} className="text-orange-500" />} color="privset" defaultOpen={false}>
             <div className="p-3 space-y-2">
               {privSets.map((ps, i) => (
-                <div key={i} className="text-sm p-2 bg-white rounded-lg border border-gray-100">
-                  <div className="font-medium text-gray-700">{ps.name}</div>
-                  <div className="text-xs text-gray-500 mt-1">
+                <div key={i} className="text-sm p-2 bg-white dark:bg-gray-700 rounded-lg border border-gray-100 dark:border-gray-600">
+                  <div className="font-medium text-gray-700 dark:text-gray-200">{ps.name}</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                     Records: {ps.records} · Layouts: {ps.layouts} · Scripts: {ps.scripts}
                   </div>
                 </div>
@@ -976,34 +976,34 @@ const StatsView = ({ data }) => {
         ].map(s => (
           <div key={s.label} className={`${C[s.color].light} ${C[s.color].border} border rounded-xl p-5 shadow-sm`}>
             <div className={`text-3xl font-bold ${C[s.color].text}`}>{s.value.toLocaleString()}</div>
-            <div className="text-sm text-gray-500 mt-1">{s.label}</div>
+            <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">{s.label}</div>
           </div>
         ))}
       </div>
 
-      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden shadow-sm">
         <table className="w-full text-sm">
-          <thead className="bg-gray-50">
+          <thead className="bg-gray-50 dark:bg-gray-700">
             <tr>
-              <th className="text-left p-4 font-medium text-gray-700">Database</th>
-              <th className="text-right p-4 font-medium text-gray-700">Tables</th>
-              <th className="text-right p-4 font-medium text-gray-700">Fields</th>
-              <th className="text-right p-4 font-medium text-gray-700">TOs</th>
-              <th className="text-right p-4 font-medium text-gray-700">Layouts</th>
-              <th className="text-right p-4 font-medium text-gray-700">Scripts</th>
-              <th className="text-right p-4 font-medium text-gray-700">Rels</th>
+              <th className="text-left p-4 font-medium text-gray-700 dark:text-gray-200">Database</th>
+              <th className="text-right p-4 font-medium text-gray-700 dark:text-gray-200">Tables</th>
+              <th className="text-right p-4 font-medium text-gray-700 dark:text-gray-200">Fields</th>
+              <th className="text-right p-4 font-medium text-gray-700 dark:text-gray-200">TOs</th>
+              <th className="text-right p-4 font-medium text-gray-700 dark:text-gray-200">Layouts</th>
+              <th className="text-right p-4 font-medium text-gray-700 dark:text-gray-200">Scripts</th>
+              <th className="text-right p-4 font-medium text-gray-700 dark:text-gray-200">Rels</th>
             </tr>
           </thead>
           <tbody>
             {stats.perDb.map((db, i) => (
-              <tr key={i} className="border-t border-gray-100 hover:bg-gray-50">
-                <td className="p-4 font-medium text-gray-800">{db.name}</td>
-                <td className="p-4 text-right text-gray-600">{db.tables}</td>
-                <td className="p-4 text-right text-gray-600">{db.fields}</td>
-                <td className="p-4 text-right text-gray-600">{db.tos}</td>
-                <td className="p-4 text-right text-gray-600">{db.layouts}</td>
-                <td className="p-4 text-right text-gray-600">{db.scripts}</td>
-                <td className="p-4 text-right text-gray-600">{db.rels}</td>
+              <tr key={i} className="border-t border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
+                <td className="p-4 font-medium text-gray-800 dark:text-gray-100">{db.name}</td>
+                <td className="p-4 text-right text-gray-600 dark:text-gray-300">{db.tables}</td>
+                <td className="p-4 text-right text-gray-600 dark:text-gray-300">{db.fields}</td>
+                <td className="p-4 text-right text-gray-600 dark:text-gray-300">{db.tos}</td>
+                <td className="p-4 text-right text-gray-600 dark:text-gray-300">{db.layouts}</td>
+                <td className="p-4 text-right text-gray-600 dark:text-gray-300">{db.scripts}</td>
+                <td className="p-4 text-right text-gray-600 dark:text-gray-300">{db.rels}</td>
               </tr>
             ))}
           </tbody>
@@ -1055,10 +1055,10 @@ const CrossFileView = ({ data, onNav }) => {
 
   if (totalRefs === 0) {
     return (
-      <div className="p-6 text-center text-gray-500">
-        <ExternalLink size={48} className="mx-auto mb-4 text-gray-300" />
+      <div className="p-6 text-center text-gray-500 dark:text-gray-400">
+        <ExternalLink size={48} className="mx-auto mb-4 text-gray-300 dark:text-gray-600" />
         <p>No cross-file references found</p>
-        <p className="text-sm text-gray-400 mt-2">Shadow TOs and external script calls will appear here</p>
+        <p className="text-sm text-gray-400 dark:text-gray-500 mt-2">Shadow TOs and external script calls will appear here</p>
       </div>
     );
   }
@@ -1070,8 +1070,8 @@ const CrossFileView = ({ data, onNav }) => {
           <ExternalLink size={24} className="text-white" />
         </div>
         <div>
-          <h2 className="text-xl font-bold text-gray-800">Cross-File References</h2>
-          <p className="text-sm text-gray-500">{toRefs.length} shadow TOs · {scriptRefs.length} external script calls</p>
+          <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100">Cross-File References</h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400">{toRefs.length} shadow TOs · {scriptRefs.length} external script calls</p>
         </div>
       </div>
 
@@ -1087,12 +1087,12 @@ const CrossFileView = ({ data, onNav }) => {
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
               tab === t.id
                 ? 'bg-red-500 text-white shadow-lg'
-                : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
+                : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
             }`}
           >
             <t.icon size={14} />
             {t.label}
-            <span className={`px-1.5 py-0.5 rounded-full text-xs ${tab === t.id ? 'bg-white/20' : 'bg-gray-100'}`}>
+            <span className={`px-1.5 py-0.5 rounded-full text-xs ${tab === t.id ? 'bg-white/20' : 'bg-gray-100 dark:bg-gray-700'}`}>
               {t.count}
             </span>
           </button>
@@ -1102,28 +1102,28 @@ const CrossFileView = ({ data, onNav }) => {
       {tab === 'tos' && (
         <div className="space-y-4">
           {Object.entries(groupedTOs).map(([key, items]) => (
-            <div key={key} className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
-              <div className="bg-violet-50 px-4 py-3 border-b border-violet-100 flex items-center gap-3">
+            <div key={key} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden shadow-sm">
+              <div className="bg-violet-50 dark:bg-violet-900/20 px-4 py-3 border-b border-violet-100 dark:border-violet-900 flex items-center gap-3">
                 <Layers size={16} className="text-violet-500" />
-                <span className="font-medium text-violet-700">{key}</span>
+                <span className="font-medium text-violet-700 dark:text-violet-400">{key}</span>
                 <Badge color="to" size="xs">{items.length} TOs</Badge>
               </div>
               <div className="p-4">
                 <table className="w-full text-sm">
-                  <thead className="bg-gray-50">
+                  <thead className="bg-gray-50 dark:bg-gray-700">
                     <tr>
-                      <th className="text-left p-2 font-medium text-gray-700">TO Name</th>
-                      <th className="text-left p-2 font-medium text-gray-700">Base Table</th>
-                      <th className="text-left p-2 font-medium text-gray-700">External File</th>
+                      <th className="text-left p-2 font-medium text-gray-700 dark:text-gray-200">TO Name</th>
+                      <th className="text-left p-2 font-medium text-gray-700 dark:text-gray-200">Base Table</th>
+                      <th className="text-left p-2 font-medium text-gray-700 dark:text-gray-200">External File</th>
                     </tr>
                   </thead>
                   <tbody>
                     {items.map((r, i) => (
-                      <tr key={i} className="border-t border-gray-100 hover:bg-gray-50">
+                      <tr key={i} className="border-t border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
                         <td className="p-2">
                           <NavLink type="to" name={r.toName} small onClick={() => onNav('to', r.toName, r.toDb)} />
                         </td>
-                        <td className="p-2 text-gray-600">{r.baseTable}</td>
+                        <td className="p-2 text-gray-600 dark:text-gray-300">{r.baseTable}</td>
                         <td className="p-2">
                           <Badge color="ext" size="xs">{r.externalFile}</Badge>
                         </td>
@@ -1135,8 +1135,8 @@ const CrossFileView = ({ data, onNav }) => {
             </div>
           ))}
           {toRefs.length === 0 && (
-            <div className="text-center py-12 text-gray-500">
-              <Layers size={48} className="mx-auto mb-4 text-gray-300" />
+            <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+              <Layers size={48} className="mx-auto mb-4 text-gray-300 dark:text-gray-600" />
               <p>No shadow table occurrences found</p>
             </div>
           )}
@@ -1146,25 +1146,25 @@ const CrossFileView = ({ data, onNav }) => {
       {tab === 'tables' && (
         <div className="space-y-4">
           {tableGroups.map((group, gi) => (
-            <div key={gi} className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
-              <div className="bg-blue-50 px-4 py-3 border-b border-blue-100 flex items-center gap-3">
+            <div key={gi} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden shadow-sm">
+              <div className="bg-blue-50 dark:bg-blue-900/20 px-4 py-3 border-b border-blue-100 dark:border-blue-900 flex items-center gap-3">
                 <Table size={16} className="text-blue-500" />
-                <span className="font-medium text-blue-700">{group.externalFile}::{group.baseTable}</span>
+                <span className="font-medium text-blue-700 dark:text-blue-400">{group.externalFile}::{group.baseTable}</span>
                 <Badge color="to" size="xs">{group.tos.length} TOs</Badge>
               </div>
               <div className="p-4 flex flex-wrap gap-2">
                 {group.tos.map((r, i) => (
-                  <div key={i} className="flex items-center gap-2 text-sm bg-gray-50 rounded-lg px-3 py-2 border border-gray-100">
+                  <div key={i} className="flex items-center gap-2 text-sm bg-gray-50 dark:bg-gray-700 rounded-lg px-3 py-2 border border-gray-100 dark:border-gray-600">
                     <NavLink type="to" name={r.toName} small onClick={() => onNav('to', r.toName, r.toDb)} />
-                    <span className="text-gray-400 text-xs">in {r.toDb}</span>
+                    <span className="text-gray-400 dark:text-gray-500 text-xs">in {r.toDb}</span>
                   </div>
                 ))}
               </div>
             </div>
           ))}
           {tableGroups.length === 0 && (
-            <div className="text-center py-12 text-gray-500">
-              <Table size={48} className="mx-auto mb-4 text-gray-300" />
+            <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+              <Table size={48} className="mx-auto mb-4 text-gray-300 dark:text-gray-600" />
               <p>No cross-file table references found</p>
             </div>
           )}
@@ -1174,26 +1174,26 @@ const CrossFileView = ({ data, onNav }) => {
       {tab === 'scripts' && (
         <div className="space-y-4">
           {Object.entries(groupedScripts).map(([key, items]) => (
-            <div key={key} className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
-              <div className="bg-red-50 px-4 py-3 border-b border-red-100 flex items-center gap-3">
+            <div key={key} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden shadow-sm">
+              <div className="bg-red-50 dark:bg-red-900/20 px-4 py-3 border-b border-red-100 dark:border-red-900 flex items-center gap-3">
                 <Code size={16} className="text-red-500" />
-                <span className="font-medium text-red-600">{key}</span>
+                <span className="font-medium text-red-600 dark:text-red-400">{key}</span>
                 <Badge color="ext" size="xs">{items.length}</Badge>
               </div>
               <div className="p-4 space-y-2">
                 {items.map((r, i) => (
                   <div key={i} className="flex items-center gap-3 text-sm">
                     <NavLink type="script" name={r.sourceScript} onClick={() => onNav('script', r.sourceScript, r.sourceDb)} />
-                    <ArrowRight size={14} className="text-gray-400" />
-                    <span className="text-gray-500">{r.targetScript}</span>
+                    <ArrowRight size={14} className="text-gray-400 dark:text-gray-500" />
+                    <span className="text-gray-500 dark:text-gray-400">{r.targetScript}</span>
                   </div>
                 ))}
               </div>
             </div>
           ))}
           {scriptRefs.length === 0 && (
-            <div className="text-center py-12 text-gray-500">
-              <Code size={48} className="mx-auto mb-4 text-gray-300" />
+            <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+              <Code size={48} className="mx-auto mb-4 text-gray-300 dark:text-gray-600" />
               <p>No cross-file script calls found</p>
             </div>
           )}
@@ -1284,14 +1284,14 @@ const AuditView = ({ data, analysis, onNav }) => {
           <Shield size={24} className="text-white" />
         </div>
         <div className="flex-1">
-          <h2 className="text-xl font-bold text-gray-800">Audit & Analysis</h2>
-          <p className="text-sm text-gray-500">Security, cleanup, and performance analysis</p>
+          <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100">Audit & Analysis</h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Security, cleanup, and performance analysis</p>
         </div>
         {dbNames.length > 1 && (
           <select
             value={filterDb}
             onChange={e => setFilterDb(e.target.value)}
-            className="text-sm bg-white border border-gray-300 rounded-lg px-4 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+            className="text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
           >
             <option value="">All Databases</option>
             {dbNames.map(name => <option key={name} value={name}>{name}</option>)}
@@ -1303,7 +1303,7 @@ const AuditView = ({ data, analysis, onNav }) => {
       <div className="space-y-3 mb-6">
         {tabGroups.map(group => (
           <div key={group.label} className="flex items-center gap-2">
-            <span className={`text-xs font-medium text-${group.color}-600 w-16`}>{group.label}</span>
+            <span className={`text-xs font-medium text-${group.color}-600 dark:text-${group.color}-400 w-16`}>{group.label}</span>
             <div className="flex gap-1.5 flex-wrap">
               {group.tabs.map(t => (
                 <button
@@ -1312,13 +1312,13 @@ const AuditView = ({ data, analysis, onNav }) => {
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                     tab === t.id
                       ? `bg-${group.color}-500 text-white shadow-md`
-                      : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
+                      : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
                   }`}
                 >
                   <t.icon size={12} />
                   {t.label}
                   {t.count > 0 && (
-                    <span className={`px-1.5 py-0.5 rounded-full text-[10px] ${tab === t.id ? 'bg-white/20' : 'bg-gray-100'}`}>
+                    <span className={`px-1.5 py-0.5 rounded-full text-[10px] ${tab === t.id ? 'bg-white/20' : 'bg-gray-100 dark:bg-gray-700'}`}>
                       {t.count}
                     </span>
                   )}
@@ -1334,41 +1334,41 @@ const AuditView = ({ data, analysis, onNav }) => {
         <div className="space-y-4">
           {filteredSecurity.fullAccessScripts.length > 0 ? (
             <>
-              <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4">
                 <div className="flex items-center gap-3 mb-3">
                   <AlertTriangle size={20} className="text-red-500" />
-                  <span className="font-medium text-red-700">Scripts Running with Full Access Privileges</span>
+                  <span className="font-medium text-red-700 dark:text-red-400">Scripts Running with Full Access Privileges</span>
                 </div>
-                <p className="text-sm text-red-600 mb-4">
+                <p className="text-sm text-red-600 dark:text-red-400 mb-4">
                   These scripts run with elevated privileges regardless of the user's privilege set.
                   {filteredSecurity.unrestrictedScripts.length > 0 && (
                     <span className="font-medium"> {filteredSecurity.unrestrictedScripts.length} are also included in menus (higher risk).</span>
                   )}
                 </p>
               </div>
-              <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+              <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
                 <table className="w-full text-sm">
-                  <thead className="bg-gray-50">
+                  <thead className="bg-gray-50 dark:bg-gray-700">
                     <tr>
-                      <th className="text-left p-3 font-medium text-gray-700">Script</th>
-                      <th className="text-left p-3 font-medium text-gray-700">Database</th>
-                      <th className="text-left p-3 font-medium text-gray-700">Folder</th>
-                      <th className="text-left p-3 font-medium text-gray-700">In Menu</th>
+                      <th className="text-left p-3 font-medium text-gray-700 dark:text-gray-200">Script</th>
+                      <th className="text-left p-3 font-medium text-gray-700 dark:text-gray-200">Database</th>
+                      <th className="text-left p-3 font-medium text-gray-700 dark:text-gray-200">Folder</th>
+                      <th className="text-left p-3 font-medium text-gray-700 dark:text-gray-200">In Menu</th>
                     </tr>
                   </thead>
                   <tbody>
                     {filteredSecurity.fullAccessScripts.map((s, i) => (
-                      <tr key={i} className={`border-t border-gray-100 hover:bg-gray-50 ${s.inMenu ? 'bg-red-50/50' : ''}`}>
+                      <tr key={i} className={`border-t border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 ${s.inMenu ? 'bg-red-50/50 dark:bg-red-900/10' : ''}`}>
                         <td className="p-3">
                           <NavLink type="script" name={s.name} onClick={() => onNav('script', s.name, s.db)} />
                         </td>
-                        <td className="p-3 text-gray-600">{s.db}</td>
-                        <td className="p-3 text-gray-500 text-xs">{s.folder || '-'}</td>
+                        <td className="p-3 text-gray-600 dark:text-gray-300">{s.db}</td>
+                        <td className="p-3 text-gray-500 dark:text-gray-400 text-xs">{s.folder || '-'}</td>
                         <td className="p-3">
                           {s.inMenu ? (
-                            <span className="bg-red-100 text-red-700 px-2 py-1 rounded-full text-xs font-medium">Yes</span>
+                            <span className="bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 px-2 py-1 rounded-full text-xs font-medium">Yes</span>
                           ) : (
-                            <span className="text-gray-400 text-xs">No</span>
+                            <span className="text-gray-400 dark:text-gray-500 text-xs">No</span>
                           )}
                         </td>
                       </tr>
@@ -1378,9 +1378,9 @@ const AuditView = ({ data, analysis, onNav }) => {
               </div>
             </>
           ) : (
-            <div className="text-center py-12 text-gray-500">
-              <Shield size={48} className="mx-auto mb-4 text-green-300" />
-              <p className="text-green-600 font-medium">No scripts with full access privileges found</p>
+            <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+              <Shield size={48} className="mx-auto mb-4 text-green-300 dark:text-green-700" />
+              <p className="text-green-600 dark:text-green-400 font-medium">No scripts with full access privileges found</p>
             </div>
           )}
         </div>
@@ -1448,36 +1448,36 @@ const AuditView = ({ data, analysis, onNav }) => {
 const OrphanList = ({ items, type, columns, onNav, emptyMessage }) => {
   if (items.length === 0) {
     return (
-      <div className="text-center py-12 text-gray-500">
-        <Trash2 size={48} className="mx-auto mb-4 text-green-300" />
-        <p className="text-green-600 font-medium">{emptyMessage}</p>
+      <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+        <Trash2 size={48} className="mx-auto mb-4 text-green-300 dark:text-green-700" />
+        <p className="text-green-600 dark:text-green-400 font-medium">{emptyMessage}</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-      <div className="bg-amber-50 px-4 py-3 border-b border-amber-100">
-        <span className="text-amber-700 font-medium">{items.length} potentially unused {type}s found</span>
+    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
+      <div className="bg-amber-50 dark:bg-amber-900/20 px-4 py-3 border-b border-amber-100 dark:border-amber-900">
+        <span className="text-amber-700 dark:text-amber-400 font-medium">{items.length} potentially unused {type}s found</span>
       </div>
       <div className="max-h-96 overflow-auto">
         <table className="w-full text-sm">
-          <thead className="bg-gray-50 sticky top-0">
+          <thead className="bg-gray-50 dark:bg-gray-700 sticky top-0">
             <tr>
               {columns.map(c => (
-                <th key={c} className="text-left p-3 font-medium text-gray-700 capitalize">{c}</th>
+                <th key={c} className="text-left p-3 font-medium text-gray-700 dark:text-gray-200 capitalize">{c}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {items.map((item, i) => (
-              <tr key={i} className="border-t border-gray-100 hover:bg-gray-50">
+              <tr key={i} className="border-t border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
                 {columns.map(c => (
                   <td key={c} className="p-3">
                     {c === 'name' ? (
                       <NavLink type={type} name={item.name} onClick={() => onNav(type, item.name, item.db)} />
                     ) : (
-                      <span className="text-gray-600">{item[c] || '-'}</span>
+                      <span className="text-gray-600 dark:text-gray-300">{item[c] || '-'}</span>
                     )}
                   </td>
                 ))}
@@ -1550,11 +1550,11 @@ const FieldUsageContent = ({ analysis, data, onNav, filterDb }) => {
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                 usageTab === t.id
                   ? `bg-${t.color}-500 text-white shadow-md`
-                  : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
+                  : 'bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
               }`}
             >
               {t.label}
-              <span className={`px-1.5 py-0.5 rounded-full text-[10px] ${usageTab === t.id ? 'bg-white/20' : 'bg-gray-100'}`}>
+              <span className={`px-1.5 py-0.5 rounded-full text-[10px] ${usageTab === t.id ? 'bg-white/20' : 'bg-gray-100 dark:bg-gray-600'}`}>
                 {t.count}
               </span>
             </button>
@@ -1564,7 +1564,7 @@ const FieldUsageContent = ({ analysis, data, onNav, filterDb }) => {
           <select
             value={filterTable}
             onChange={e => setFilterTable(e.target.value)}
-            className="text-xs bg-white border border-gray-200 rounded-lg px-2 py-1.5 text-gray-700 focus:outline-none"
+            className="text-xs bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-2 py-1.5 text-gray-700 dark:text-gray-200 focus:outline-none"
           >
             <option value="">All Tables</option>
             {tables.map(t => <option key={t} value={t.includes('::') ? t.split('::')[1] : t}>{t}</option>)}
@@ -1573,28 +1573,28 @@ const FieldUsageContent = ({ analysis, data, onNav, filterDb }) => {
       </div>
 
       {currentItems.length === 0 ? (
-        <div className="text-center py-8 text-gray-500">
-          <Heart size={32} className="mx-auto mb-2 text-green-300" />
+        <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+          <Heart size={32} className="mx-auto mb-2 text-green-300 dark:text-green-700" />
           <p className="text-sm">No fields in this category</p>
         </div>
       ) : (
-        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
           <div className="max-h-80 overflow-auto">
             <table className="w-full text-sm">
-              <thead className="bg-gray-50 sticky top-0">
+              <thead className="bg-gray-50 dark:bg-gray-700 sticky top-0">
                 <tr>
-                  <th className="text-left p-3 font-medium text-gray-700">Table</th>
-                  <th className="text-left p-3 font-medium text-gray-700">Field</th>
-                  <th className="text-left p-3 font-medium text-gray-700">Type</th>
-                  <th className="text-left p-3 font-medium text-gray-700">Refs</th>
+                  <th className="text-left p-3 font-medium text-gray-700 dark:text-gray-200">Table</th>
+                  <th className="text-left p-3 font-medium text-gray-700 dark:text-gray-200">Field</th>
+                  <th className="text-left p-3 font-medium text-gray-700 dark:text-gray-200">Type</th>
+                  <th className="text-left p-3 font-medium text-gray-700 dark:text-gray-200">Refs</th>
                 </tr>
               </thead>
               <tbody>
                 {currentItems.slice(0, 100).map((f, i) => (
-                  <tr key={i} className="border-t border-gray-100 hover:bg-gray-50">
-                    <td className="p-3 text-gray-600 text-xs">{f.table}</td>
-                    <td className="p-3 font-mono text-cyan-600">{f.name}</td>
-                    <td className="p-3 text-gray-500 text-xs">{f.dataType}</td>
+                  <tr key={i} className="border-t border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
+                    <td className="p-3 text-gray-600 dark:text-gray-300 text-xs">{f.table}</td>
+                    <td className="p-3 font-mono text-cyan-600 dark:text-cyan-400">{f.name}</td>
+                    <td className="p-3 text-gray-500 dark:text-gray-400 text-xs">{f.dataType}</td>
                     <td className="p-3 text-gray-400 text-xs">{f.refCount || 0}</td>
                   </tr>
                 ))}
@@ -1602,7 +1602,7 @@ const FieldUsageContent = ({ analysis, data, onNav, filterDb }) => {
             </table>
           </div>
           {currentItems.length > 100 && (
-            <div className="px-4 py-2 bg-gray-50 text-xs text-gray-500 border-t">
+            <div className="px-4 py-2 bg-gray-50 dark:bg-gray-700 text-xs text-gray-500 dark:text-gray-400 border-t dark:border-gray-600">
               Showing first 100 of {currentItems.length} fields
             </div>
           )}
@@ -1651,11 +1651,11 @@ const PerformanceContent = ({ analysis, data, onNav, filterDb }) => {
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
               perfTab === t.id
                 ? `bg-${t.color}-500 text-white shadow-md`
-                : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
+                : 'bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
             }`}
           >
             {t.label}
-            <span className={`px-1.5 py-0.5 rounded-full text-[10px] ${perfTab === t.id ? 'bg-white/20' : 'bg-gray-100'}`}>
+            <span className={`px-1.5 py-0.5 rounded-full text-[10px] ${perfTab === t.id ? 'bg-white/20' : 'bg-gray-100 dark:bg-gray-600'}`}>
               {t.count}
             </span>
           </button>
@@ -1664,29 +1664,29 @@ const PerformanceContent = ({ analysis, data, onNav, filterDb }) => {
 
       {perfTab === 'calcs' && (
         filteredCalcs.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
-            <Zap size={32} className="mx-auto mb-2 text-green-300" />
+          <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+            <Zap size={32} className="mx-auto mb-2 text-green-300 dark:text-green-700" />
             <p className="text-sm">No unstored calculations found</p>
           </div>
         ) : (
-          <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-            <div className="bg-orange-50 px-4 py-2 border-b border-orange-100 text-xs text-orange-700">
+          <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
+            <div className="bg-orange-50 dark:bg-orange-900/20 px-4 py-2 border-b border-orange-100 dark:border-orange-900/40 text-xs text-orange-700 dark:text-orange-400">
               Unstored calculations are re-evaluated each time they're accessed
             </div>
             <div className="max-h-80 overflow-auto">
               <table className="w-full text-sm">
-                <thead className="bg-gray-50 sticky top-0">
+                <thead className="bg-gray-50 dark:bg-gray-700 sticky top-0">
                   <tr>
-                    <th className="text-left p-3 font-medium text-gray-700">Table</th>
-                    <th className="text-left p-3 font-medium text-gray-700">Field</th>
-                    <th className="text-left p-3 font-medium text-gray-700">DB</th>
+                    <th className="text-left p-3 font-medium text-gray-700 dark:text-gray-200">Table</th>
+                    <th className="text-left p-3 font-medium text-gray-700 dark:text-gray-200">Field</th>
+                    <th className="text-left p-3 font-medium text-gray-700 dark:text-gray-200">DB</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredCalcs.slice(0, 100).map((c, i) => (
-                    <tr key={i} className="border-t border-gray-100 hover:bg-gray-50">
-                      <td className="p-3 text-gray-600 text-xs">{c.table}</td>
-                      <td className="p-3 font-mono text-orange-600">{c.name}</td>
+                    <tr key={i} className="border-t border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
+                      <td className="p-3 text-gray-600 dark:text-gray-300 text-xs">{c.table}</td>
+                      <td className="p-3 font-mono text-orange-600 dark:text-orange-400">{c.name}</td>
                       <td className="p-3 text-gray-400 text-xs">{c.db}</td>
                     </tr>
                   ))}
@@ -1699,31 +1699,31 @@ const PerformanceContent = ({ analysis, data, onNav, filterDb }) => {
 
       {perfTab === 'wide' && (
         filteredWide.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
-            <Table size={32} className="mx-auto mb-2 text-green-300" />
+          <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+            <Table size={32} className="mx-auto mb-2 text-green-300 dark:text-green-700" />
             <p className="text-sm">No tables with excessive fields found</p>
           </div>
         ) : (
-          <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-            <div className="bg-red-50 px-4 py-2 border-b border-red-100 text-xs text-red-700">
+          <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
+            <div className="bg-red-50 dark:bg-red-900/20 px-4 py-2 border-b border-red-100 dark:border-red-900/40 text-xs text-red-700 dark:text-red-400">
               Tables with many fields can impact performance and maintainability
             </div>
             <div className="max-h-80 overflow-auto">
               <table className="w-full text-sm">
-                <thead className="bg-gray-50 sticky top-0">
+                <thead className="bg-gray-50 dark:bg-gray-700 sticky top-0">
                   <tr>
-                    <th className="text-left p-3 font-medium text-gray-700">Table</th>
-                    <th className="text-left p-3 font-medium text-gray-700">Fields</th>
-                    <th className="text-left p-3 font-medium text-gray-700">DB</th>
+                    <th className="text-left p-3 font-medium text-gray-700 dark:text-gray-200">Table</th>
+                    <th className="text-left p-3 font-medium text-gray-700 dark:text-gray-200">Fields</th>
+                    <th className="text-left p-3 font-medium text-gray-700 dark:text-gray-200">DB</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredWide.map((t, i) => (
-                    <tr key={i} className="border-t border-gray-100 hover:bg-gray-50">
+                    <tr key={i} className="border-t border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
                       <td className="p-3">
                         <NavLink type="table" name={t.name} onClick={() => onNav('table', t.name, t.db)} />
                       </td>
-                      <td className="p-3 font-medium text-red-600">{t.fieldCount}</td>
+                      <td className="p-3 font-medium text-red-600 dark:text-red-400">{t.fieldCount}</td>
                       <td className="p-3 text-gray-400 text-xs">{t.db}</td>
                     </tr>
                   ))}
@@ -1736,31 +1736,31 @@ const PerformanceContent = ({ analysis, data, onNav, filterDb }) => {
 
       {perfTab === 'large' && (
         filteredLarge.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
-            <Code size={32} className="mx-auto mb-2 text-green-300" />
+          <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+            <Code size={32} className="mx-auto mb-2 text-green-300 dark:text-green-700" />
             <p className="text-sm">No excessively large scripts found</p>
           </div>
         ) : (
-          <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-            <div className="bg-amber-50 px-4 py-2 border-b border-amber-100 text-xs text-amber-700">
+          <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
+            <div className="bg-amber-50 dark:bg-amber-900/20 px-4 py-2 border-b border-amber-100 dark:border-amber-900/40 text-xs text-amber-700 dark:text-amber-400">
               Large scripts may benefit from being broken into smaller, reusable sub-scripts
             </div>
             <div className="max-h-80 overflow-auto">
               <table className="w-full text-sm">
-                <thead className="bg-gray-50 sticky top-0">
+                <thead className="bg-gray-50 dark:bg-gray-700 sticky top-0">
                   <tr>
-                    <th className="text-left p-3 font-medium text-gray-700">Script</th>
-                    <th className="text-left p-3 font-medium text-gray-700">Steps</th>
-                    <th className="text-left p-3 font-medium text-gray-700">DB</th>
+                    <th className="text-left p-3 font-medium text-gray-700 dark:text-gray-200">Script</th>
+                    <th className="text-left p-3 font-medium text-gray-700 dark:text-gray-200">Steps</th>
+                    <th className="text-left p-3 font-medium text-gray-700 dark:text-gray-200">DB</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredLarge.map((s, i) => (
-                    <tr key={i} className="border-t border-gray-100 hover:bg-gray-50">
+                    <tr key={i} className="border-t border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
                       <td className="p-3">
                         <NavLink type="script" name={s.name} onClick={() => onNav('script', s.name, s.db)} />
                       </td>
-                      <td className="p-3 font-medium text-amber-600">{s.stepCount}</td>
+                      <td className="p-3 font-medium text-amber-600 dark:text-amber-400">{s.stepCount}</td>
                       <td className="p-3 text-gray-400 text-xs">{s.db}</td>
                     </tr>
                   ))}
@@ -1773,29 +1773,29 @@ const PerformanceContent = ({ analysis, data, onNav, filterDb }) => {
 
       {perfTab === 'containers' && (
         filteredContainers.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
-            <Box size={32} className="mx-auto mb-2 text-green-300" />
+          <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+            <Box size={32} className="mx-auto mb-2 text-green-300 dark:text-green-700" />
             <p className="text-sm">No container fields found</p>
           </div>
         ) : (
-          <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-            <div className="bg-purple-50 px-4 py-2 border-b border-purple-100 text-xs text-purple-700">
+          <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
+            <div className="bg-purple-50 dark:bg-purple-900/20 px-4 py-2 border-b border-purple-100 dark:border-purple-900/40 text-xs text-purple-700 dark:text-purple-400">
               Container fields store binary data - consider external storage for large files
             </div>
             <div className="max-h-80 overflow-auto">
               <table className="w-full text-sm">
-                <thead className="bg-gray-50 sticky top-0">
+                <thead className="bg-gray-50 dark:bg-gray-700 sticky top-0">
                   <tr>
-                    <th className="text-left p-3 font-medium text-gray-700">Table</th>
-                    <th className="text-left p-3 font-medium text-gray-700">Field</th>
-                    <th className="text-left p-3 font-medium text-gray-700">DB</th>
+                    <th className="text-left p-3 font-medium text-gray-700 dark:text-gray-200">Table</th>
+                    <th className="text-left p-3 font-medium text-gray-700 dark:text-gray-200">Field</th>
+                    <th className="text-left p-3 font-medium text-gray-700 dark:text-gray-200">DB</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredContainers.slice(0, 100).map((c, i) => (
-                    <tr key={i} className="border-t border-gray-100 hover:bg-gray-50">
-                      <td className="p-3 text-gray-600 text-xs">{c.table}</td>
-                      <td className="p-3 font-mono text-purple-600">{c.name}</td>
+                    <tr key={i} className="border-t border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
+                      <td className="p-3 text-gray-600 dark:text-gray-300 text-xs">{c.table}</td>
+                      <td className="p-3 font-mono text-purple-600 dark:text-purple-400">{c.name}</td>
                       <td className="p-3 text-gray-400 text-xs">{c.db}</td>
                     </tr>
                   ))}
@@ -1808,30 +1808,30 @@ const PerformanceContent = ({ analysis, data, onNav, filterDb }) => {
 
       {perfTab === 'globals' && (
         filteredGlobals.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
-            <Sparkles size={32} className="mx-auto mb-2 text-green-300" />
+          <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+            <Sparkles size={32} className="mx-auto mb-2 text-green-300 dark:text-green-700" />
             <p className="text-sm">No global fields found</p>
           </div>
         ) : (
-          <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-            <div className="bg-blue-50 px-4 py-2 border-b border-blue-100 text-xs text-blue-700">
+          <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
+            <div className="bg-blue-50 dark:bg-blue-900/20 px-4 py-2 border-b border-blue-100 dark:border-blue-900/40 text-xs text-blue-700 dark:text-blue-400">
               Global fields are session-specific and can use memory
             </div>
             <div className="max-h-80 overflow-auto">
               <table className="w-full text-sm">
-                <thead className="bg-gray-50 sticky top-0">
+                <thead className="bg-gray-50 dark:bg-gray-700 sticky top-0">
                   <tr>
-                    <th className="text-left p-3 font-medium text-gray-700">Table</th>
-                    <th className="text-left p-3 font-medium text-gray-700">Field</th>
-                    <th className="text-left p-3 font-medium text-gray-700">Type</th>
+                    <th className="text-left p-3 font-medium text-gray-700 dark:text-gray-200">Table</th>
+                    <th className="text-left p-3 font-medium text-gray-700 dark:text-gray-200">Field</th>
+                    <th className="text-left p-3 font-medium text-gray-700 dark:text-gray-200">Type</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredGlobals.slice(0, 100).map((g, i) => (
-                    <tr key={i} className="border-t border-gray-100 hover:bg-gray-50">
-                      <td className="p-3 text-gray-600 text-xs">{g.table}</td>
-                      <td className="p-3 font-mono text-blue-600">{g.name}</td>
-                      <td className="p-3 text-gray-500 text-xs">{g.dataType}</td>
+                    <tr key={i} className="border-t border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
+                      <td className="p-3 text-gray-600 dark:text-gray-300 text-xs">{g.table}</td>
+                      <td className="p-3 font-mono text-blue-600 dark:text-blue-400">{g.name}</td>
+                      <td className="p-3 text-gray-500 dark:text-gray-400 text-xs">{g.dataType}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -1866,23 +1866,23 @@ const IndirectionContent = ({ analysis, data, onNav, filterDb }) => {
   return (
     <div className="space-y-4">
       {filteredSQL.length > 0 && (
-        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
-          <div className="bg-purple-50 px-4 py-2 border-b border-purple-100 flex items-center gap-3">
+        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden shadow-sm">
+          <div className="bg-purple-50 dark:bg-purple-900/20 px-4 py-2 border-b border-purple-100 dark:border-purple-900/40 flex items-center gap-3">
             <Database size={14} className="text-purple-500" />
-            <span className="font-medium text-purple-700 text-sm">ExecuteSQL ({filteredSQL.length})</span>
+            <span className="font-medium text-purple-700 dark:text-purple-400 text-sm">ExecuteSQL ({filteredSQL.length})</span>
           </div>
           <div className="p-3 space-y-1.5 max-h-48 overflow-auto">
             {filteredSQL.map((item, i) => (
-              <div key={i} className="flex items-center gap-2 text-xs p-1.5 hover:bg-gray-50 rounded">
+              <div key={i} className="flex items-center gap-2 text-xs p-1.5 hover:bg-gray-50 dark:hover:bg-gray-700 rounded">
                 {item.location === 'script' ? (
                   <>
                     <NavLink type="script" name={item.script} small onClick={() => onNav('script', item.script, item.db)} />
-                    <span className="text-gray-400">step {item.step}</span>
+                    <span className="text-gray-400 dark:text-gray-500">step {item.step}</span>
                   </>
                 ) : (
                   <>
-                    <span className="text-gray-500">{item.table}::</span>
-                    <span className="font-mono text-purple-600">{item.field}</span>
+                    <span className="text-gray-500 dark:text-gray-400">{item.table}::</span>
+                    <span className="font-mono text-purple-600 dark:text-purple-400">{item.field}</span>
                     <Badge color="cf" size="xs">{item.location}</Badge>
                   </>
                 )}
@@ -1894,23 +1894,23 @@ const IndirectionContent = ({ analysis, data, onNav, filterDb }) => {
       )}
 
       {filteredEval.length > 0 && (
-        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
-          <div className="bg-amber-50 px-4 py-2 border-b border-amber-100 flex items-center gap-3">
+        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden shadow-sm">
+          <div className="bg-amber-50 dark:bg-amber-900/20 px-4 py-2 border-b border-amber-100 dark:border-amber-900/40 flex items-center gap-3">
             <Code size={14} className="text-amber-500" />
-            <span className="font-medium text-amber-700 text-sm">Evaluate ({filteredEval.length})</span>
+            <span className="font-medium text-amber-700 dark:text-amber-400 text-sm">Evaluate ({filteredEval.length})</span>
           </div>
           <div className="p-3 space-y-1.5 max-h-48 overflow-auto">
             {filteredEval.map((item, i) => (
-              <div key={i} className="flex items-center gap-2 text-xs p-1.5 hover:bg-gray-50 rounded">
+              <div key={i} className="flex items-center gap-2 text-xs p-1.5 hover:bg-gray-50 dark:hover:bg-gray-700 rounded">
                 {item.location === 'script' ? (
                   <>
                     <NavLink type="script" name={item.script} small onClick={() => onNav('script', item.script, item.db)} />
-                    <span className="text-gray-400">step {item.step}</span>
+                    <span className="text-gray-400 dark:text-gray-500">step {item.step}</span>
                   </>
                 ) : (
                   <>
-                    <span className="text-gray-500">{item.table}::</span>
-                    <span className="font-mono text-amber-600">{item.field}</span>
+                    <span className="text-gray-500 dark:text-gray-400">{item.table}::</span>
+                    <span className="font-mono text-amber-600 dark:text-amber-400">{item.field}</span>
                     <Badge color="cf" size="xs">{item.location}</Badge>
                   </>
                 )}
@@ -1922,16 +1922,16 @@ const IndirectionContent = ({ analysis, data, onNav, filterDb }) => {
       )}
 
       {filteredDynamic.length > 0 && (
-        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
-          <div className="bg-rose-50 px-4 py-2 border-b border-rose-100 flex items-center gap-3">
+        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden shadow-sm">
+          <div className="bg-rose-50 dark:bg-rose-900/20 px-4 py-2 border-b border-rose-100 dark:border-rose-900/40 flex items-center gap-3">
             <Zap size={14} className="text-rose-500" />
-            <span className="font-medium text-rose-700 text-sm">Dynamic References ({filteredDynamic.length})</span>
+            <span className="font-medium text-rose-700 dark:text-rose-400 text-sm">Dynamic References ({filteredDynamic.length})</span>
           </div>
           <div className="p-3 space-y-1.5 max-h-48 overflow-auto">
             {filteredDynamic.map((item, i) => (
-              <div key={i} className="flex items-center gap-2 text-xs p-1.5 hover:bg-gray-50 rounded">
+              <div key={i} className="flex items-center gap-2 text-xs p-1.5 hover:bg-gray-50 dark:hover:bg-gray-700 rounded">
                 <NavLink type="script" name={item.script} small onClick={() => onNav('script', item.script, item.db)} />
-                <span className="text-gray-400">step {item.step}</span>
+                <span className="text-gray-400 dark:text-gray-500">step {item.step}</span>
                 <span className="text-gray-400 text-[10px] ml-auto">{item.db}</span>
               </div>
             ))}
@@ -1972,14 +1972,14 @@ const IndirectionView = ({ analysis, data, onNav }) => {
           <FileSearch size={24} className="text-white" />
         </div>
         <div className="flex-1">
-          <h2 className="text-xl font-bold text-gray-800">Indirection Sources</h2>
-          <p className="text-sm text-gray-500">Dynamic code execution and SQL queries ({totalCount} found)</p>
+          <h2 className="text-xl font-bold text-gray-800 dark:text-white">Indirection Sources</h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Dynamic code execution and SQL queries ({totalCount} found)</p>
         </div>
         {dbNames.length > 1 && (
           <select
             value={filterDb}
             onChange={e => setFilterDb(e.target.value)}
-            className="text-sm bg-white border border-gray-300 rounded-lg px-4 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+            className="text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
           >
             <option value="">All Databases</option>
             {dbNames.map(name => <option key={name} value={name}>{name}</option>)}
@@ -1988,14 +1988,14 @@ const IndirectionView = ({ analysis, data, onNav }) => {
       </div>
 
       {filteredSQL.length > 0 && (
-        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
-          <div className="bg-purple-50 px-4 py-3 border-b border-purple-100 flex items-center gap-3">
+        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden shadow-sm">
+          <div className="bg-purple-50 dark:bg-purple-900/20 px-4 py-3 border-b border-purple-100 dark:border-purple-900/40 flex items-center gap-3">
             <Database size={16} className="text-purple-500" />
-            <span className="font-medium text-purple-700">ExecuteSQL ({filteredSQL.length})</span>
+            <span className="font-medium text-purple-700 dark:text-purple-400">ExecuteSQL ({filteredSQL.length})</span>
           </div>
           <div className="p-4 space-y-2 max-h-64 overflow-auto">
             {filteredSQL.map((item, i) => (
-              <div key={i} className="flex items-center gap-3 text-sm p-2 hover:bg-gray-50 rounded-lg">
+              <div key={i} className="flex items-center gap-3 text-sm p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg">
                 {item.location === 'script' ? (
                   <>
                     <NavLink type="script" name={item.script} small onClick={() => onNav('script', item.script, item.db)} />
@@ -2003,8 +2003,8 @@ const IndirectionView = ({ analysis, data, onNav }) => {
                   </>
                 ) : (
                   <>
-                    <span className="text-gray-500">{item.table}::</span>
-                    <span className="font-mono text-purple-600">{item.field}</span>
+                    <span className="text-gray-500 dark:text-gray-400">{item.table}::</span>
+                    <span className="font-mono text-purple-600 dark:text-purple-400">{item.field}</span>
                     <Badge color="cf" size="xs">{item.location}</Badge>
                   </>
                 )}
@@ -2016,23 +2016,23 @@ const IndirectionView = ({ analysis, data, onNav }) => {
       )}
 
       {filteredEval.length > 0 && (
-        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
-          <div className="bg-amber-50 px-4 py-3 border-b border-amber-100 flex items-center gap-3">
+        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden shadow-sm">
+          <div className="bg-amber-50 dark:bg-amber-900/20 px-4 py-3 border-b border-amber-100 dark:border-amber-900/40 flex items-center gap-3">
             <Zap size={16} className="text-amber-500" />
-            <span className="font-medium text-amber-700">Evaluate ({filteredEval.length})</span>
+            <span className="font-medium text-amber-700 dark:text-amber-400">Evaluate ({filteredEval.length})</span>
           </div>
           <div className="p-4 space-y-2 max-h-64 overflow-auto">
             {filteredEval.map((item, i) => (
-              <div key={i} className="flex items-center gap-3 text-sm p-2 hover:bg-gray-50 rounded-lg">
+              <div key={i} className="flex items-center gap-3 text-sm p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg">
                 {item.location === 'script' ? (
                   <>
                     <NavLink type="script" name={item.script} small onClick={() => onNav('script', item.script, item.db)} />
-                    <span className="text-gray-400">step {item.step}</span>
+                    <span className="text-gray-400 dark:text-gray-500">step {item.step}</span>
                   </>
                 ) : (
                   <>
-                    <span className="text-gray-500">{item.table}::</span>
-                    <span className="font-mono text-amber-600">{item.field}</span>
+                    <span className="text-gray-500 dark:text-gray-400">{item.table}::</span>
+                    <span className="font-mono text-amber-600 dark:text-amber-400">{item.field}</span>
                   </>
                 )}
                 <span className="text-gray-400 text-xs ml-auto">{item.db}</span>
@@ -2043,19 +2043,19 @@ const IndirectionView = ({ analysis, data, onNav }) => {
       )}
 
       {filteredDynamic.length > 0 && (
-        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
-          <div className="bg-cyan-50 px-4 py-3 border-b border-cyan-100 flex items-center gap-3">
+        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden shadow-sm">
+          <div className="bg-cyan-50 dark:bg-cyan-900/20 px-4 py-3 border-b border-cyan-100 dark:border-cyan-900/40 flex items-center gap-3">
             <ArrowRight size={16} className="text-cyan-500" />
-            <span className="font-medium text-cyan-700">Other Dynamic References ({filteredDynamic.length})</span>
+            <span className="font-medium text-cyan-700 dark:text-cyan-400">Other Dynamic References ({filteredDynamic.length})</span>
           </div>
           <div className="p-4 space-y-2 max-h-64 overflow-auto">
             {filteredDynamic.map((item, i) => (
-              <div key={i} className="flex items-center gap-3 text-sm p-2 hover:bg-gray-50 rounded-lg">
+              <div key={i} className="flex items-center gap-3 text-sm p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg">
                 <Badge color="field" size="xs">{item.type}</Badge>
                 {item.location === 'script' ? (
                   <NavLink type="script" name={item.script} small onClick={() => onNav('script', item.script, item.db)} />
                 ) : (
-                  <span className="font-mono text-gray-600">{item.table}::{item.field}</span>
+                  <span className="font-mono text-gray-600 dark:text-gray-300">{item.table}::{item.field}</span>
                 )}
                 <span className="text-gray-400 text-xs ml-auto">{item.db}</span>
               </div>
@@ -2065,8 +2065,8 @@ const IndirectionView = ({ analysis, data, onNav }) => {
       )}
 
       {totalCount === 0 && filterDb && (
-        <div className="text-center py-12 text-gray-500">
-          <FileSearch size={48} className="mx-auto mb-4 text-gray-300" />
+        <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+          <FileSearch size={48} className="mx-auto mb-4 text-gray-300 dark:text-gray-600" />
           <p>No indirection patterns found in {filterDb}</p>
         </div>
       )}
@@ -2165,14 +2165,14 @@ const ReportCardView = ({ analysis, data }) => {
           <Gauge size={24} className="text-white" />
         </div>
         <div className="flex-1">
-          <h2 className="text-xl font-bold text-gray-800">Report Card</h2>
-          <p className="text-sm text-gray-500">Solution complexity analysis</p>
+          <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100">Report Card</h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Solution complexity analysis</p>
         </div>
         {dbNames.length > 1 && (
           <select
             value={filterDb}
             onChange={e => setFilterDb(e.target.value)}
-            className="text-sm bg-white border border-gray-300 rounded-lg px-4 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+            className="text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
           >
             <option value="">All Databases</option>
             {dbNames.map(name => <option key={name} value={name}>{name}</option>)}
@@ -2181,7 +2181,7 @@ const ReportCardView = ({ analysis, data }) => {
       </div>
 
       {/* Complexity Score */}
-      <div className="bg-white border border-gray-200 rounded-2xl p-6 mb-6 shadow-sm">
+      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 mb-6 shadow-sm">
         <div className="flex items-center gap-8">
           <div className={`w-32 h-32 rounded-full bg-gradient-to-br ${scoreBg} flex items-center justify-center shadow-lg`}>
             <div className="text-center text-white">
@@ -2191,13 +2191,13 @@ const ReportCardView = ({ analysis, data }) => {
           </div>
           <div className="flex-1">
             <div className={`text-2xl font-bold ${scoreColor}`}>{level}</div>
-            <p className="text-gray-500 mt-1">Complexity Level</p>
+            <p className="text-gray-500 dark:text-gray-400 mt-1">Complexity Level</p>
             {factors?.length > 0 && (
               <div className="mt-4">
-                <p className="text-sm text-gray-600 mb-2">Contributing factors:</p>
+                <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">Contributing factors:</p>
                 <div className="flex flex-wrap gap-2">
                   {factors.map((f, i) => (
-                    <span key={i} className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">{f}</span>
+                    <span key={i} className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-2 py-1 rounded-full">{f}</span>
                   ))}
                 </div>
               </div>
@@ -2220,37 +2220,37 @@ const ReportCardView = ({ analysis, data }) => {
         ].map(m => (
           <div key={m.label} className={`${C[m.color].light} ${C[m.color].border} border rounded-xl p-4 shadow-sm`}>
             <div className={`text-2xl font-bold ${C[m.color].text}`}>{(m.value || 0).toLocaleString()}</div>
-            <div className="text-xs text-gray-500 mt-1">{m.label}</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">{m.label}</div>
           </div>
         ))}
       </div>
 
       {/* Per-Database Breakdown */}
       {!filterDb && metrics.perDb?.length > 1 && (
-        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
-          <div className="bg-gray-50 px-4 py-3 border-b border-gray-100 font-medium text-gray-700">
+        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden shadow-sm">
+          <div className="bg-gray-50 dark:bg-gray-700 px-4 py-3 border-b border-gray-100 dark:border-gray-600 font-medium text-gray-700 dark:text-gray-200">
             Per-Database Breakdown
           </div>
           <table className="w-full text-sm">
-            <thead className="bg-gray-50">
+            <thead className="bg-gray-50 dark:bg-gray-700">
               <tr>
-                <th className="text-left p-3 font-medium text-gray-700">Database</th>
-                <th className="text-right p-3 font-medium text-gray-700">Tables</th>
-                <th className="text-right p-3 font-medium text-gray-700">Fields</th>
-                <th className="text-right p-3 font-medium text-gray-700">TOs</th>
-                <th className="text-right p-3 font-medium text-gray-700">Scripts</th>
-                <th className="text-right p-3 font-medium text-gray-700">Avg Steps</th>
+                <th className="text-left p-3 font-medium text-gray-700 dark:text-gray-200">Database</th>
+                <th className="text-right p-3 font-medium text-gray-700 dark:text-gray-200">Tables</th>
+                <th className="text-right p-3 font-medium text-gray-700 dark:text-gray-200">Fields</th>
+                <th className="text-right p-3 font-medium text-gray-700 dark:text-gray-200">TOs</th>
+                <th className="text-right p-3 font-medium text-gray-700 dark:text-gray-200">Scripts</th>
+                <th className="text-right p-3 font-medium text-gray-700 dark:text-gray-200">Avg Steps</th>
               </tr>
             </thead>
             <tbody>
               {metrics.perDb.map((db, i) => (
-                <tr key={i} className="border-t border-gray-100 hover:bg-gray-50">
-                  <td className="p-3 font-medium text-gray-800">{db.name}</td>
-                  <td className="p-3 text-right text-gray-600">{db.tables}</td>
-                  <td className="p-3 text-right text-gray-600">{db.fields}</td>
-                  <td className="p-3 text-right text-gray-600">{db.tos}</td>
-                  <td className="p-3 text-right text-gray-600">{db.scripts}</td>
-                  <td className="p-3 text-right text-gray-600">{db.avgStepsPerScript}</td>
+                <tr key={i} className="border-t border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
+                  <td className="p-3 font-medium text-gray-800 dark:text-gray-100">{db.name}</td>
+                  <td className="p-3 text-right text-gray-600 dark:text-gray-300">{db.tables}</td>
+                  <td className="p-3 text-right text-gray-600 dark:text-gray-300">{db.fields}</td>
+                  <td className="p-3 text-right text-gray-600 dark:text-gray-300">{db.tos}</td>
+                  <td className="p-3 text-right text-gray-600 dark:text-gray-300">{db.scripts}</td>
+                  <td className="p-3 text-right text-gray-600 dark:text-gray-300">{db.avgStepsPerScript}</td>
                 </tr>
               ))}
             </tbody>
@@ -2310,8 +2310,8 @@ const FieldUsageView = ({ analysis, data, onNav }) => {
           <TrendingUp size={24} className="text-white" />
         </div>
         <div className="flex-1">
-          <h2 className="text-xl font-bold text-gray-800">Field Usage Analysis</h2>
-          <p className="text-sm text-gray-500">
+          <h2 className="text-xl font-bold text-gray-800 dark:text-white">Field Usage Analysis</h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
             {fieldUsage.summary.total.toLocaleString()} fields · {fieldUsage.summary.unused} unused · {fieldUsage.summary.calculated} calculated
           </p>
         </div>
@@ -2320,7 +2320,7 @@ const FieldUsageView = ({ analysis, data, onNav }) => {
             <select
               value={filterDb}
               onChange={e => { setFilterDb(e.target.value); setFilterTable(''); }}
-              className="text-sm bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+              className="text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
             >
               <option value="">All Databases</option>
               {dbNames.map(name => <option key={name} value={name}>{name}</option>)}
@@ -2330,7 +2330,7 @@ const FieldUsageView = ({ analysis, data, onNav }) => {
             <select
               value={filterTable}
               onChange={e => setFilterTable(e.target.value)}
-              className="text-sm bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500/50 max-w-48"
+              className="text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/50 max-w-48"
             >
               <option value="">All Tables</option>
               {tables.map(name => <option key={name} value={name.includes('::') ? name.split('::')[1] : name}>{name}</option>)}
@@ -2341,37 +2341,37 @@ const FieldUsageView = ({ analysis, data, onNav }) => {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-4 gap-4">
-        <div className="bg-red-50 border border-red-200 rounded-xl p-4 shadow-sm">
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4 shadow-sm">
           <div className="flex items-center gap-2 mb-2">
             <Trash2 size={16} className="text-red-500" />
-            <span className="text-sm font-medium text-red-700">Unused</span>
+            <span className="text-sm font-medium text-red-700 dark:text-red-400">Unused</span>
           </div>
-          <div className="text-2xl font-bold text-red-600">{filteredUnused.length}</div>
-          <p className="text-xs text-red-500 mt-1">Not referenced anywhere</p>
+          <div className="text-2xl font-bold text-red-600 dark:text-red-400">{filteredUnused.length}</div>
+          <p className="text-xs text-red-500 dark:text-red-500 mt-1">Not referenced anywhere</p>
         </div>
-        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 shadow-sm">
+        <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4 shadow-sm">
           <div className="flex items-center gap-2 mb-2">
             <TrendingDown size={16} className="text-amber-500" />
-            <span className="text-sm font-medium text-amber-700">Rarely Used</span>
+            <span className="text-sm font-medium text-amber-700 dark:text-amber-400">Rarely Used</span>
           </div>
-          <div className="text-2xl font-bold text-amber-600">{filteredRarelyUsed.length}</div>
-          <p className="text-xs text-amber-500 mt-1">1 reference only</p>
+          <div className="text-2xl font-bold text-amber-600 dark:text-amber-400">{filteredRarelyUsed.length}</div>
+          <p className="text-xs text-amber-500 dark:text-amber-500 mt-1">1 reference only</p>
         </div>
-        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 shadow-sm">
+        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4 shadow-sm">
           <div className="flex items-center gap-2 mb-2">
             <Activity size={16} className="text-blue-500" />
-            <span className="text-sm font-medium text-blue-700">Moderate</span>
+            <span className="text-sm font-medium text-blue-700 dark:text-blue-400">Moderate</span>
           </div>
-          <div className="text-2xl font-bold text-blue-600">{filteredModerate.length}</div>
-          <p className="text-xs text-blue-500 mt-1">2-5 references</p>
+          <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{filteredModerate.length}</div>
+          <p className="text-xs text-blue-500 dark:text-blue-500 mt-1">2-5 references</p>
         </div>
-        <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 shadow-sm">
+        <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl p-4 shadow-sm">
           <div className="flex items-center gap-2 mb-2">
             <TrendingUp size={16} className="text-emerald-500" />
-            <span className="text-sm font-medium text-emerald-700">Heavy Use</span>
+            <span className="text-sm font-medium text-emerald-700 dark:text-emerald-400">Heavy Use</span>
           </div>
-          <div className="text-2xl font-bold text-emerald-600">{filteredHeavy.length}</div>
-          <p className="text-xs text-emerald-500 mt-1">6+ references</p>
+          <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{filteredHeavy.length}</div>
+          <p className="text-xs text-emerald-500 dark:text-emerald-500 mt-1">6+ references</p>
         </div>
       </div>
 
@@ -2389,12 +2389,12 @@ const FieldUsageView = ({ analysis, data, onNav }) => {
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
               tab === t.id
                 ? `bg-${t.color}-500 text-white shadow-lg`
-                : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
+                : 'bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
             }`}
             style={tab === t.id ? { backgroundColor: t.color === 'red' ? '#ef4444' : t.color === 'amber' ? '#f59e0b' : t.color === 'blue' ? '#3b82f6' : '#10b981' } : {}}
           >
             {t.label}
-            <span className={`px-1.5 py-0.5 rounded-full text-xs ${tab === t.id ? 'bg-white/20' : 'bg-gray-100'}`}>
+            <span className={`px-1.5 py-0.5 rounded-full text-xs ${tab === t.id ? 'bg-white/20' : 'bg-gray-100 dark:bg-gray-600'}`}>
               {t.count}
             </span>
           </button>
@@ -2463,7 +2463,7 @@ const FieldUsageList = ({ fields, title, subtitle, color, onNav }) => {
   }, {});
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden shadow-sm">
       <div className={`bg-${color}-50 px-4 py-3 border-b border-${color}-100`} style={{ backgroundColor: color === 'red' ? '#fef2f2' : color === 'amber' ? '#fffbeb' : color === 'blue' ? '#eff6ff' : '#ecfdf5' }}>
         <div className="flex items-center justify-between">
           <div>
@@ -2475,67 +2475,67 @@ const FieldUsageList = ({ fields, title, subtitle, color, onNav }) => {
       </div>
       <div className="max-h-[32rem] overflow-auto">
         {Object.entries(byTable).map(([tableKey, tableFields]) => (
-          <div key={tableKey} className="border-b border-gray-100 last:border-0">
-            <div className="bg-gray-50 px-4 py-2 flex items-center gap-2">
+          <div key={tableKey} className="border-b border-gray-100 dark:border-gray-700 last:border-0">
+            <div className="bg-gray-50 dark:bg-gray-700 px-4 py-2 flex items-center gap-2">
               <Table size={14} className="text-blue-500" />
-              <span className="text-sm font-medium text-gray-700">{tableKey}</span>
-              <span className="text-xs text-gray-400">({tableFields.length} fields)</span>
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-200">{tableKey}</span>
+              <span className="text-xs text-gray-400 dark:text-gray-500">({tableFields.length} fields)</span>
             </div>
             {tableFields.map((field, i) => (
-              <div key={i} className="border-t border-gray-100 first:border-0">
+              <div key={i} className="border-t border-gray-100 dark:border-gray-700 first:border-0">
                 <div
-                  className="px-4 py-3 flex items-center gap-3 hover:bg-gray-50 cursor-pointer"
+                  className="px-4 py-3 flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
                   onClick={() => setExpanded(expanded === `${tableKey}::${field.name}` ? null : `${tableKey}::${field.name}`)}
                 >
                   <Grid3X3 size={14} className="text-cyan-500 flex-shrink-0" />
-                  <span className="font-mono text-sm text-gray-700 flex-1">{field.name}</span>
-                  <span className={`text-[10px] px-2 py-0.5 rounded-full ${dtColors[field.dataType] || 'bg-gray-100 text-gray-600'}`}>
+                  <span className="font-mono text-sm text-gray-700 dark:text-gray-200 flex-1">{field.name}</span>
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full ${dtColors[field.dataType] || 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300'}`}>
                     {field.dataType}
                   </span>
                   {field.isCalculated && <Badge color="cf" size="xs">Calc</Badge>}
                   {field.isGlobal && <Badge color="ext" size="xs">Global</Badge>}
                   {field.refCount > 0 && (
-                    <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">{field.refCount} refs</span>
+                    <span className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-2 py-1 rounded-full">{field.refCount} refs</span>
                   )}
                   <ChevronRight size={14} className={`text-gray-400 transition-transform ${expanded === `${tableKey}::${field.name}` ? 'rotate-90' : ''}`} />
                 </div>
                 {expanded === `${tableKey}::${field.name}` && (
-                  <div className="px-4 pb-3 bg-gray-50 space-y-2">
+                  <div className="px-4 pb-3 bg-gray-50 dark:bg-gray-700/50 space-y-2">
                     {field.references.scripts.length > 0 && (
                       <div>
-                        <div className="text-[10px] font-medium text-gray-500 mb-1.5 uppercase">In {field.references.scripts.length} Script(s)</div>
+                        <div className="text-[10px] font-medium text-gray-500 dark:text-gray-400 mb-1.5 uppercase">In {field.references.scripts.length} Script(s)</div>
                         <div className="flex flex-wrap gap-1.5">
                           {field.references.scripts.slice(0, 10).map((ref, j) => (
                             <NavLink key={j} type="script" name={ref.script} small onClick={() => onNav('script', ref.script, ref.db)} />
                           ))}
-                          {field.references.scripts.length > 10 && <span className="text-xs text-gray-500">+{field.references.scripts.length - 10} more</span>}
+                          {field.references.scripts.length > 10 && <span className="text-xs text-gray-500 dark:text-gray-400">+{field.references.scripts.length - 10} more</span>}
                         </div>
                       </div>
                     )}
                     {field.references.layouts.length > 0 && (
                       <div>
-                        <div className="text-[10px] font-medium text-gray-500 mb-1.5 uppercase">On {field.references.layouts.length} Layout(s)</div>
+                        <div className="text-[10px] font-medium text-gray-500 dark:text-gray-400 mb-1.5 uppercase">On {field.references.layouts.length} Layout(s)</div>
                         <div className="flex flex-wrap gap-1.5">
                           {field.references.layouts.slice(0, 10).map((ref, j) => (
                             <NavLink key={j} type="layout" name={ref.layout} small onClick={() => onNav('layout', ref.layout, ref.db)} />
                           ))}
-                          {field.references.layouts.length > 10 && <span className="text-xs text-gray-500">+{field.references.layouts.length - 10} more</span>}
+                          {field.references.layouts.length > 10 && <span className="text-xs text-gray-500 dark:text-gray-400">+{field.references.layouts.length - 10} more</span>}
                         </div>
                       </div>
                     )}
                     {field.references.calcs.length > 0 && (
                       <div>
-                        <div className="text-[10px] font-medium text-gray-500 mb-1.5 uppercase">In {field.references.calcs.length} Calculation(s)</div>
+                        <div className="text-[10px] font-medium text-gray-500 dark:text-gray-400 mb-1.5 uppercase">In {field.references.calcs.length} Calculation(s)</div>
                         <div className="flex flex-wrap gap-1.5">
                           {field.references.calcs.slice(0, 10).map((ref, j) => (
-                            <span key={j} className="text-[10px] bg-cyan-100 text-cyan-700 px-2 py-1 rounded-full border border-cyan-200">{ref.table}.{ref.field}</span>
+                            <span key={j} className="text-[10px] bg-cyan-100 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-400 px-2 py-1 rounded-full border border-cyan-200 dark:border-cyan-800">{ref.table}.{ref.field}</span>
                           ))}
-                          {field.references.calcs.length > 10 && <span className="text-xs text-gray-500">+{field.references.calcs.length - 10} more</span>}
+                          {field.references.calcs.length > 10 && <span className="text-xs text-gray-500 dark:text-gray-400">+{field.references.calcs.length - 10} more</span>}
                         </div>
                       </div>
                     )}
                     {field.references.scripts.length === 0 && field.references.layouts.length === 0 && field.references.calcs.length === 0 && (
-                      <p className="text-xs text-gray-500 italic">No references found</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 italic">No references found</p>
                     )}
                   </div>
                 )}
@@ -2582,8 +2582,8 @@ const PerformanceView = ({ analysis, data, onNav }) => {
           <Activity size={24} className="text-white" />
         </div>
         <div className="flex-1">
-          <h2 className="text-xl font-bold text-gray-800">Performance Hints</h2>
-          <p className="text-sm text-gray-500">
+          <h2 className="text-xl font-bold text-gray-800 dark:text-white">Performance Hints</h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
             {totalIssues} potential performance concerns identified
           </p>
         </div>
@@ -2591,7 +2591,7 @@ const PerformanceView = ({ analysis, data, onNav }) => {
           <select
             value={filterDb}
             onChange={e => setFilterDb(e.target.value)}
-            className="text-sm bg-white border border-gray-300 rounded-lg px-4 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+            className="text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
           >
             <option value="">All Databases</option>
             {dbNames.map(name => <option key={name} value={name}>{name}</option>)}
@@ -2601,40 +2601,40 @@ const PerformanceView = ({ analysis, data, onNav }) => {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-5 gap-4">
-        <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 shadow-sm">
+        <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-xl p-4 shadow-sm">
           <div className="flex items-center gap-2 mb-2">
             <Clock size={16} className="text-orange-500" />
-            <span className="text-xs font-medium text-orange-700">Unstored Calcs</span>
+            <span className="text-xs font-medium text-orange-700 dark:text-orange-400">Unstored Calcs</span>
           </div>
-          <div className="text-2xl font-bold text-orange-600">{filteredCalcs.length}</div>
+          <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">{filteredCalcs.length}</div>
         </div>
-        <div className="bg-purple-50 border border-purple-200 rounded-xl p-4 shadow-sm">
+        <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-xl p-4 shadow-sm">
           <div className="flex items-center gap-2 mb-2">
             <Table size={16} className="text-purple-500" />
-            <span className="text-xs font-medium text-purple-700">Wide Tables</span>
+            <span className="text-xs font-medium text-purple-700 dark:text-purple-400">Wide Tables</span>
           </div>
-          <div className="text-2xl font-bold text-purple-600">{filteredWide.length}</div>
+          <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">{filteredWide.length}</div>
         </div>
-        <div className="bg-rose-50 border border-rose-200 rounded-xl p-4 shadow-sm">
+        <div className="bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 rounded-xl p-4 shadow-sm">
           <div className="flex items-center gap-2 mb-2">
             <Code size={16} className="text-rose-500" />
-            <span className="text-xs font-medium text-rose-700">Large Scripts</span>
+            <span className="text-xs font-medium text-rose-700 dark:text-rose-400">Large Scripts</span>
           </div>
-          <div className="text-2xl font-bold text-rose-600">{filteredLarge.length}</div>
+          <div className="text-2xl font-bold text-rose-600 dark:text-rose-400">{filteredLarge.length}</div>
         </div>
-        <div className="bg-pink-50 border border-pink-200 rounded-xl p-4 shadow-sm">
+        <div className="bg-pink-50 dark:bg-pink-900/20 border border-pink-200 dark:border-pink-800 rounded-xl p-4 shadow-sm">
           <div className="flex items-center gap-2 mb-2">
             <Box size={16} className="text-pink-500" />
-            <span className="text-xs font-medium text-pink-700">Containers</span>
+            <span className="text-xs font-medium text-pink-700 dark:text-pink-400">Containers</span>
           </div>
-          <div className="text-2xl font-bold text-pink-600">{filteredContainers.length}</div>
+          <div className="text-2xl font-bold text-pink-600 dark:text-pink-400">{filteredContainers.length}</div>
         </div>
-        <div className="bg-cyan-50 border border-cyan-200 rounded-xl p-4 shadow-sm">
+        <div className="bg-cyan-50 dark:bg-cyan-900/20 border border-cyan-200 dark:border-cyan-800 rounded-xl p-4 shadow-sm">
           <div className="flex items-center gap-2 mb-2">
             <Zap size={16} className="text-cyan-500" />
-            <span className="text-xs font-medium text-cyan-700">Global Fields</span>
+            <span className="text-xs font-medium text-cyan-700 dark:text-cyan-400">Global Fields</span>
           </div>
-          <div className="text-2xl font-bold text-cyan-600">{filteredGlobals.length}</div>
+          <div className="text-2xl font-bold text-cyan-600 dark:text-cyan-400">{filteredGlobals.length}</div>
         </div>
       </div>
 
@@ -2654,13 +2654,13 @@ const PerformanceView = ({ analysis, data, onNav }) => {
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
               tab === t.id
                 ? 'bg-orange-500 text-white shadow-lg'
-                : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
+                : 'bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
             }`}
           >
             <t.icon size={14} />
             {t.label}
             {t.count !== undefined && (
-              <span className={`px-1.5 py-0.5 rounded-full text-xs ${tab === t.id ? 'bg-white/20' : 'bg-gray-100'}`}>
+              <span className={`px-1.5 py-0.5 rounded-full text-xs ${tab === t.id ? 'bg-white/20' : 'bg-gray-100 dark:bg-gray-600'}`}>
                 {t.count}
               </span>
             )}
@@ -2671,9 +2671,9 @@ const PerformanceView = ({ analysis, data, onNav }) => {
       {/* Content */}
       {tab === 'overview' && (
         <div className="space-y-4">
-          <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
-            <h3 className="font-semibold text-gray-800 mb-3">Performance Overview</h3>
-            <div className="space-y-3 text-sm text-gray-600">
+          <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5 shadow-sm">
+            <h3 className="font-semibold text-gray-800 dark:text-white mb-3">Performance Overview</h3>
+            <div className="space-y-3 text-sm text-gray-600 dark:text-gray-300">
               <p>This analysis identifies potential performance bottlenecks in your FileMaker solution:</p>
               <ul className="space-y-2 ml-4">
                 <li className="flex items-start gap-2">
@@ -2766,35 +2766,35 @@ const PerformanceView = ({ analysis, data, onNav }) => {
 const PerformanceList = ({ items, columns, emptyMessage, onNav, type, customRender }) => {
   if (!items || items.length === 0) {
     return (
-      <div className="text-center py-12 text-gray-500">
-        <Activity size={48} className="mx-auto mb-4 text-green-300" />
-        <p className="text-green-600 font-medium">{emptyMessage}</p>
+      <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+        <Activity size={48} className="mx-auto mb-4 text-green-300 dark:text-green-700" />
+        <p className="text-green-600 dark:text-green-400 font-medium">{emptyMessage}</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden shadow-sm">
       <div className="max-h-96 overflow-auto">
         <table className="w-full text-sm">
-          <thead className="bg-gray-50 sticky top-0">
+          <thead className="bg-gray-50 dark:bg-gray-700 sticky top-0">
             <tr>
               {columns.map(c => (
-                <th key={c} className="text-left p-3 font-medium text-gray-700 capitalize">{c === 'db' ? 'Database' : c}</th>
+                <th key={c} className="text-left p-3 font-medium text-gray-700 dark:text-gray-200 capitalize">{c === 'db' ? 'Database' : c}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {items.map((item, i) => (
-              <tr key={i} className={`border-t border-gray-100 hover:bg-gray-50 ${item.severity === 'high' ? 'bg-red-50/50' : ''}`}>
+              <tr key={i} className={`border-t border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 ${item.severity === 'high' ? 'bg-red-50/50 dark:bg-red-900/10' : ''}`}>
                 {columns.map(c => (
                   <td key={c} className="p-3">
                     {c === 'name' && type === 'script' ? (
                       <NavLink type="script" name={item.name} onClick={() => onNav('script', item.name, item.db)} />
                     ) : customRender ? (
-                      <span className="text-gray-600">{customRender(item, c) || '-'}</span>
+                      <span className="text-gray-600 dark:text-gray-300">{customRender(item, c) || '-'}</span>
                     ) : (
-                      <span className="text-gray-600">{item[c] || '-'}</span>
+                      <span className="text-gray-600 dark:text-gray-300">{item[c] || '-'}</span>
                     )}
                   </td>
                 ))}
@@ -3001,29 +3001,29 @@ const ERDView = ({ data, onNav }) => {
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-3 flex items-center gap-3 flex-wrap">
+      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-3 flex items-center gap-3 flex-wrap">
         <div className="w-10 h-10 bg-gradient-to-br from-pink-500 to-rose-500 rounded-xl flex items-center justify-center shadow-lg">
           <GitBranch size={20} className="text-white" />
         </div>
         <div className="flex-1 min-w-0">
-          <h2 className="text-lg font-bold text-gray-800">Entity Relationship Diagram</h2>
-          <p className="text-sm text-gray-500">
+          <h2 className="text-lg font-bold text-gray-800 dark:text-white">Entity Relationship Diagram</h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
             {filteredTOs.length}/{tos.length} TOs · {filteredRels.length}/{rels.length} relationships
-            {focusedTO && <span className="text-violet-600"> · Focus: {focusedTO}</span>}
+            {focusedTO && <span className="text-violet-600 dark:text-violet-400"> · Focus: {focusedTO}</span>}
           </p>
         </div>
 
         {/* View mode toggle */}
-        <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+        <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
           <button
             onClick={() => setViewMode('graph')}
-            className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${viewMode === 'graph' ? 'bg-white shadow-sm text-gray-800' : 'text-gray-500 hover:text-gray-700'}`}
+            className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${viewMode === 'graph' ? 'bg-white dark:bg-gray-600 shadow-sm text-gray-800 dark:text-gray-200' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'}`}
           >
             Graph
           </button>
           <button
             onClick={() => setViewMode('list')}
-            className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${viewMode === 'list' ? 'bg-white shadow-sm text-gray-800' : 'text-gray-500 hover:text-gray-700'}`}
+            className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${viewMode === 'list' ? 'bg-white dark:bg-gray-600 shadow-sm text-gray-800 dark:text-gray-200' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'}`}
           >
             List
           </button>
@@ -3033,7 +3033,7 @@ const ERDView = ({ data, onNav }) => {
         <select
           value={baseTableFilter}
           onChange={e => { setBaseTableFilter(e.target.value); setFocusedTO(null); }}
-          className="text-sm bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+          className="text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
         >
           <option value="">All Base Tables ({baseTables.length})</option>
           {baseTables.map(t => (
@@ -3045,7 +3045,7 @@ const ERDView = ({ data, onNav }) => {
           <select
             value={selectedDb}
             onChange={e => { setSelectedDb(Number(e.target.value)); clearFilters(); }}
-            className="text-sm bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+            className="text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
           >
             {data.databases.map((d, i) => <option key={i} value={i}>{d.name}</option>)}
           </select>
@@ -3054,7 +3054,7 @@ const ERDView = ({ data, onNav }) => {
         {(focusedTO || baseTableFilter) && (
           <button
             onClick={clearFilters}
-            className="flex items-center gap-1.5 px-3 py-2 bg-red-50 text-red-600 text-sm rounded-lg hover:bg-red-100 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
           >
             <X size={14} />
             Clear
@@ -3064,18 +3064,18 @@ const ERDView = ({ data, onNav }) => {
 
       {/* Zoom controls - only for graph view */}
       {viewMode === 'graph' && (
-        <div className="bg-white border-b border-gray-200 px-6 py-2 flex items-center gap-4">
-          <div className="flex items-center gap-2 bg-gray-100 rounded-lg p-1">
-            <button onClick={() => setZoom(z => Math.max(0.2, z - 0.1))} className="px-3 py-1 text-gray-600 hover:bg-white rounded-md">-</button>
-            <span className="text-sm text-gray-600 w-12 text-center">{Math.round(zoom * 100)}%</span>
-            <button onClick={() => setZoom(z => Math.min(3, z + 0.1))} className="px-3 py-1 text-gray-600 hover:bg-white rounded-md">+</button>
-            <button onClick={() => { setZoom(1); setPan({ x: 0, y: 0 }); }} className="px-3 py-1 text-gray-600 hover:bg-white rounded-md text-xs">Reset</button>
+        <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-2 flex items-center gap-4">
+          <div className="flex items-center gap-2 bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
+            <button onClick={() => setZoom(z => Math.max(0.2, z - 0.1))} className="px-3 py-1 text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-600 rounded-md">-</button>
+            <span className="text-sm text-gray-600 dark:text-gray-300 w-12 text-center">{Math.round(zoom * 100)}%</span>
+            <button onClick={() => setZoom(z => Math.min(3, z + 0.1))} className="px-3 py-1 text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-600 rounded-md">+</button>
+            <button onClick={() => { setZoom(1); setPan({ x: 0, y: 0 }); }} className="px-3 py-1 text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-600 rounded-md text-xs">Reset</button>
           </div>
 
-          <span className="text-xs text-gray-500">Click a TO to focus on its connections. Click again to unfocus.</span>
+          <span className="text-xs text-gray-500 dark:text-gray-400">Click a TO to focus on its connections. Click again to unfocus.</span>
 
           <div className="flex items-center gap-3 ml-auto flex-wrap">
-            <span className="text-xs text-gray-500 font-medium">Legend:</span>
+            <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">Legend:</span>
             {Object.entries(layout.baseTableColors || {}).slice(0, 8).map(([table, color]) => (
               <button
                 key={table}
@@ -3083,11 +3083,11 @@ const ERDView = ({ data, onNav }) => {
                 className="flex items-center gap-1.5 hover:opacity-70 transition-opacity"
               >
                 <div className="w-3 h-3 rounded" style={{ backgroundColor: color }}></div>
-                <span className="text-xs text-gray-600">{table}</span>
+                <span className="text-xs text-gray-600 dark:text-gray-300">{table}</span>
               </button>
             ))}
             {Object.keys(layout.baseTableColors || {}).length > 8 && (
-              <span className="text-xs text-gray-400">+{Object.keys(layout.baseTableColors).length - 8} more</span>
+              <span className="text-xs text-gray-400 dark:text-gray-500">+{Object.keys(layout.baseTableColors).length - 8} more</span>
             )}
           </div>
         </div>
@@ -3095,16 +3095,16 @@ const ERDView = ({ data, onNav }) => {
 
       {/* List View */}
       {viewMode === 'list' ? (
-        <div className="flex-1 overflow-auto bg-gray-50 p-4">
-          <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+        <div className="flex-1 overflow-auto bg-gray-50 dark:bg-gray-900 p-4">
+          <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
             <table className="w-full text-sm">
-              <thead className="bg-gray-50 sticky top-0">
+              <thead className="bg-gray-50 dark:bg-gray-700 sticky top-0">
                 <tr>
-                  <th className="text-left p-3 font-medium text-gray-700">Table Occurrence</th>
-                  <th className="text-left p-3 font-medium text-gray-700">Base Table</th>
-                  <th className="text-left p-3 font-medium text-gray-700">Connections</th>
-                  <th className="text-left p-3 font-medium text-gray-700">External</th>
-                  <th className="text-left p-3 font-medium text-gray-700">Actions</th>
+                  <th className="text-left p-3 font-medium text-gray-700 dark:text-gray-200">Table Occurrence</th>
+                  <th className="text-left p-3 font-medium text-gray-700 dark:text-gray-200">Base Table</th>
+                  <th className="text-left p-3 font-medium text-gray-700 dark:text-gray-200">Connections</th>
+                  <th className="text-left p-3 font-medium text-gray-700 dark:text-gray-200">External</th>
+                  <th className="text-left p-3 font-medium text-gray-700 dark:text-gray-200">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -3112,16 +3112,16 @@ const ERDView = ({ data, onNav }) => {
                   const connections = adjacency[to.name]?.size || 0;
                   const color = layout.baseTableColors[to.baseTable] || '#6b7280';
                   return (
-                    <tr key={i} className="border-t border-gray-100 hover:bg-gray-50">
+                    <tr key={i} className="border-t border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
                       <td className="p-3">
                         <div className="flex items-center gap-2">
                           <div className="w-3 h-3 rounded" style={{ backgroundColor: color }}></div>
                           <NavLink type="to" name={to.name} onClick={() => onNav('to', to.name, db.name)} />
                         </div>
                       </td>
-                      <td className="p-3 text-gray-600">{to.baseTable}</td>
+                      <td className="p-3 text-gray-600 dark:text-gray-300">{to.baseTable}</td>
                       <td className="p-3">
-                        <span className={`px-2 py-0.5 rounded-full text-xs ${connections > 0 ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500'}`}>
+                        <span className={`px-2 py-0.5 rounded-full text-xs ${connections > 0 ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400' : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400'}`}>
                           {connections}
                         </span>
                       </td>
@@ -3135,7 +3135,7 @@ const ERDView = ({ data, onNav }) => {
                       <td className="p-3">
                         <button
                           onClick={() => { setViewMode('graph'); setFocusedTO(to.name); setBaseTableFilter(''); }}
-                          className="text-xs text-violet-600 hover:text-violet-800"
+                          className="text-xs text-violet-600 dark:text-violet-400 hover:text-violet-800 dark:hover:text-violet-300"
                         >
                           Focus in graph
                         </button>
@@ -3149,28 +3149,28 @@ const ERDView = ({ data, onNav }) => {
 
           {/* Relationships list */}
           {filteredRels.length > 0 && (
-            <div className="bg-white border border-gray-200 rounded-xl overflow-hidden mt-4">
-              <div className="bg-pink-50 px-4 py-2 border-b border-pink-100">
-                <span className="font-medium text-pink-700 text-sm">Relationships ({filteredRels.length})</span>
+            <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden mt-4">
+              <div className="bg-pink-50 dark:bg-pink-900/20 px-4 py-2 border-b border-pink-100 dark:border-pink-900/40">
+                <span className="font-medium text-pink-700 dark:text-pink-400 text-sm">Relationships ({filteredRels.length})</span>
               </div>
               <div className="max-h-64 overflow-auto">
                 <table className="w-full text-sm">
-                  <thead className="bg-gray-50 sticky top-0">
+                  <thead className="bg-gray-50 dark:bg-gray-700 sticky top-0">
                     <tr>
-                      <th className="text-left p-3 font-medium text-gray-700">Left TO</th>
-                      <th className="text-left p-3 font-medium text-gray-700">Predicate</th>
-                      <th className="text-left p-3 font-medium text-gray-700">Right TO</th>
+                      <th className="text-left p-3 font-medium text-gray-700 dark:text-gray-200">Left TO</th>
+                      <th className="text-left p-3 font-medium text-gray-700 dark:text-gray-200">Predicate</th>
+                      <th className="text-left p-3 font-medium text-gray-700 dark:text-gray-200">Right TO</th>
                     </tr>
                   </thead>
                   <tbody>
                     {filteredRels.map((rel, i) => (
-                      <tr key={i} className="border-t border-gray-100 hover:bg-gray-50">
+                      <tr key={i} className="border-t border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
                         <td className="p-3">
                           <NavLink type="to" name={rel.leftTable} small onClick={() => onNav('to', rel.leftTable, db.name)} />
                         </td>
-                        <td className="p-3 text-center text-gray-500">
+                        <td className="p-3 text-center text-gray-500 dark:text-gray-400">
                           {rel.predicates?.map((p, j) => (
-                            <span key={j} className="text-xs bg-gray-100 px-2 py-0.5 rounded mx-0.5">
+                            <span key={j} className="text-xs bg-gray-100 dark:bg-gray-700 dark:text-gray-300 px-2 py-0.5 rounded mx-0.5">
                               {p.leftField} {p.type === 'Equal' ? '=' : p.type} {p.rightField}
                             </span>
                           ))}
@@ -3190,7 +3190,7 @@ const ERDView = ({ data, onNav }) => {
         /* Graph View */
         <>
           <div
-            className="flex-1 overflow-hidden bg-gray-50 cursor-grab"
+            className="flex-1 overflow-hidden bg-gray-50 dark:bg-gray-900 cursor-grab"
             style={{ cursor: dragging ? 'grabbing' : 'grab' }}
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
@@ -3565,28 +3565,28 @@ const ScriptGraphView = ({ data, onNav }) => {
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-3 flex items-center gap-3 flex-wrap">
+      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-3 flex items-center gap-3 flex-wrap">
         <div className="w-10 h-10 bg-gradient-to-br from-amber-500 to-orange-500 rounded-xl flex items-center justify-center shadow-lg">
           <Code size={20} className="text-white" />
         </div>
         <div className="flex-1 min-w-0">
-          <h2 className="text-lg font-bold text-gray-800">Script Dependencies</h2>
-          <p className="text-sm text-gray-500">
+          <h2 className="text-lg font-bold text-gray-800 dark:text-white">Script Dependencies</h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
             {scripts.length} scripts · {entryPointCount} entry points · {orphanCount} potentially unused
           </p>
         </div>
 
         {/* View mode toggle */}
-        <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+        <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
           <button
             onClick={() => setViewMode('list')}
-            className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${viewMode === 'list' ? 'bg-white shadow-sm text-gray-800' : 'text-gray-500 hover:text-gray-700'}`}
+            className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${viewMode === 'list' ? 'bg-white dark:bg-gray-600 shadow-sm text-gray-800 dark:text-gray-200' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'}`}
           >
             List
           </button>
           <button
             onClick={() => setViewMode('graph')}
-            className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${viewMode === 'graph' ? 'bg-white shadow-sm text-gray-800' : 'text-gray-500 hover:text-gray-700'}`}
+            className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${viewMode === 'graph' ? 'bg-white dark:bg-gray-600 shadow-sm text-gray-800 dark:text-gray-200' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'}`}
           >
             Graph
           </button>
@@ -3596,7 +3596,7 @@ const ScriptGraphView = ({ data, onNav }) => {
           <select
             value={selectedDb}
             onChange={e => setSelectedDb(Number(e.target.value))}
-            className="text-sm bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+            className="text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
           >
             {data.databases.map((d, i) => <option key={i} value={i}>{d.name}</option>)}
           </select>
@@ -3604,7 +3604,7 @@ const ScriptGraphView = ({ data, onNav }) => {
 
         {viewMode === 'graph' && (
           <>
-            <label className="flex items-center gap-2 text-sm text-gray-600">
+            <label className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
               <input
                 type="checkbox"
                 checked={showOrphans}
@@ -3614,11 +3614,11 @@ const ScriptGraphView = ({ data, onNav }) => {
               Show Unused ({orphanCount})
             </label>
 
-            <div className="flex items-center gap-2 bg-gray-100 rounded-lg p-1">
-              <button onClick={() => setZoom(z => Math.max(0.2, z - 0.1))} className="px-3 py-1 text-gray-600 hover:bg-white rounded-md">-</button>
-              <span className="text-sm text-gray-600 w-12 text-center">{Math.round(zoom * 100)}%</span>
-              <button onClick={() => setZoom(z => Math.min(3, z + 0.1))} className="px-3 py-1 text-gray-600 hover:bg-white rounded-md">+</button>
-              <button onClick={() => { setZoom(1); setPan({ x: 0, y: 0 }); }} className="px-3 py-1 text-gray-600 hover:bg-white rounded-md text-xs">Reset</button>
+            <div className="flex items-center gap-2 bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
+              <button onClick={() => setZoom(z => Math.max(0.2, z - 0.1))} className="px-3 py-1 text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-600 rounded-md">-</button>
+              <span className="text-sm text-gray-600 dark:text-gray-300 w-12 text-center">{Math.round(zoom * 100)}%</span>
+              <button onClick={() => setZoom(z => Math.min(3, z + 0.1))} className="px-3 py-1 text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-600 rounded-md">+</button>
+              <button onClick={() => { setZoom(1); setPan({ x: 0, y: 0 }); }} className="px-3 py-1 text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-600 rounded-md text-xs">Reset</button>
             </div>
           </>
         )}
@@ -3626,69 +3626,69 @@ const ScriptGraphView = ({ data, onNav }) => {
 
       {/* List View */}
       {viewMode === 'list' ? (
-        <div className="flex-1 overflow-auto bg-gray-50 p-4">
-          <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-4 text-sm text-amber-800">
+        <div className="flex-1 overflow-auto bg-gray-50 dark:bg-gray-900 p-4">
+          <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-3 mb-4 text-sm text-amber-800 dark:text-amber-400">
             <strong>Note:</strong> "Potentially unused" scripts have no detected callers within this file and are not on any layout triggers.
             They may still be called from other files, startup scripts, or custom menus not captured in the DDR.
           </div>
 
-          <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+          <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
             <table className="w-full text-sm">
-              <thead className="bg-gray-50 sticky top-0">
+              <thead className="bg-gray-50 dark:bg-gray-700 sticky top-0">
                 <tr>
-                  <th className="text-left p-3 font-medium text-gray-700">Script</th>
-                  <th className="text-left p-3 font-medium text-gray-700">Folder</th>
-                  <th className="text-center p-3 font-medium text-gray-700">On Layouts</th>
-                  <th className="text-center p-3 font-medium text-gray-700">Called By</th>
-                  <th className="text-center p-3 font-medium text-gray-700">X-File</th>
-                  <th className="text-center p-3 font-medium text-gray-700">Calls</th>
-                  <th className="text-left p-3 font-medium text-gray-700">Status</th>
+                  <th className="text-left p-3 font-medium text-gray-700 dark:text-gray-200">Script</th>
+                  <th className="text-left p-3 font-medium text-gray-700 dark:text-gray-200">Folder</th>
+                  <th className="text-center p-3 font-medium text-gray-700 dark:text-gray-200">On Layouts</th>
+                  <th className="text-center p-3 font-medium text-gray-700 dark:text-gray-200">Called By</th>
+                  <th className="text-center p-3 font-medium text-gray-700 dark:text-gray-200">X-File</th>
+                  <th className="text-center p-3 font-medium text-gray-700 dark:text-gray-200">Calls</th>
+                  <th className="text-left p-3 font-medium text-gray-700 dark:text-gray-200">Status</th>
                 </tr>
               </thead>
               <tbody>
                 {scriptList.map((script, i) => (
-                  <tr key={i} className={`border-t border-gray-100 hover:bg-gray-50 ${script.isOrphan ? 'bg-red-50/30' : ''}`}>
+                  <tr key={i} className={`border-t border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 ${script.isOrphan ? 'bg-red-50/30 dark:bg-red-900/10' : ''}`}>
                     <td className="p-3">
                       <NavLink type="script" name={script.name} onClick={() => onNav('script', script.name, db.name)} />
                     </td>
-                    <td className="p-3 text-gray-500 text-xs">{script.folder || '-'}</td>
+                    <td className="p-3 text-gray-500 dark:text-gray-400 text-xs">{script.folder || '-'}</td>
                     <td className="p-3 text-center">
                       {script.layoutCount > 0 ? (
-                        <span className="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full text-xs">{script.layoutCount}</span>
+                        <span className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 px-2 py-0.5 rounded-full text-xs">{script.layoutCount}</span>
                       ) : (
-                        <span className="text-gray-300">-</span>
+                        <span className="text-gray-300 dark:text-gray-600">-</span>
                       )}
                     </td>
                     <td className="p-3 text-center">
                       {script.callerCount > 0 ? (
-                        <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full text-xs">{script.callerCount}</span>
+                        <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 px-2 py-0.5 rounded-full text-xs">{script.callerCount}</span>
                       ) : (
-                        <span className="text-gray-300">-</span>
+                        <span className="text-gray-300 dark:text-gray-600">-</span>
                       )}
                     </td>
                     <td className="p-3 text-center">
                       {script.crossFileCount > 0 ? (
-                        <span className="bg-violet-100 text-violet-700 px-2 py-0.5 rounded-full text-xs">{script.crossFileCount}</span>
+                        <span className="bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-400 px-2 py-0.5 rounded-full text-xs">{script.crossFileCount}</span>
                       ) : (
-                        <span className="text-gray-300">-</span>
+                        <span className="text-gray-300 dark:text-gray-600">-</span>
                       )}
                     </td>
                     <td className="p-3 text-center">
                       {script.callCount > 0 || script.externalCallCount > 0 ? (
-                        <span className="text-gray-600 text-xs">
+                        <span className="text-gray-600 dark:text-gray-300 text-xs">
                           {script.callCount}{script.externalCallCount > 0 && <span className="text-red-500">+{script.externalCallCount}</span>}
                         </span>
                       ) : (
-                        <span className="text-gray-300">-</span>
+                        <span className="text-gray-300 dark:text-gray-600">-</span>
                       )}
                     </td>
                     <td className="p-3">
                       {script.isRoot ? (
-                        <span className="bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full text-xs font-medium">Entry Point</span>
+                        <span className="bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-2 py-0.5 rounded-full text-xs font-medium">Entry Point</span>
                       ) : script.isOrphan ? (
-                        <span className="bg-red-100 text-red-600 px-2 py-0.5 rounded-full text-xs">Unused?</span>
+                        <span className="bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 px-2 py-0.5 rounded-full text-xs">Unused?</span>
                       ) : (
-                        <span className="text-green-600 text-xs">Referenced</span>
+                        <span className="text-green-600 dark:text-green-400 text-xs">Referenced</span>
                       )}
                     </td>
                   </tr>
@@ -3701,24 +3701,24 @@ const ScriptGraphView = ({ data, onNav }) => {
         /* Graph View */
         <>
           {/* Legend */}
-          <div className="bg-white border-b border-gray-200 px-6 py-2 flex items-center gap-6">
+          <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-2 flex items-center gap-6">
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 rounded bg-gradient-to-r from-amber-500 to-orange-500"></div>
-              <span className="text-xs text-gray-600">Entry Point (on layout/trigger)</span>
+              <span className="text-xs text-gray-600 dark:text-gray-300">Entry Point (on layout/trigger)</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded bg-white border-2 border-amber-500"></div>
-              <span className="text-xs text-gray-600">Regular Script</span>
+              <div className="w-4 h-4 rounded bg-white dark:bg-gray-700 border-2 border-amber-500"></div>
+              <span className="text-xs text-gray-600 dark:text-gray-300">Regular Script</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 rounded bg-red-100 border-2 border-red-400"></div>
-              <span className="text-xs text-gray-600">Potentially Unused</span>
+              <span className="text-xs text-gray-600 dark:text-gray-300">Potentially Unused</span>
             </div>
           </div>
 
           {/* SVG Canvas */}
           <div
-            className="flex-1 overflow-hidden bg-gray-50 cursor-grab"
+            className="flex-1 overflow-hidden bg-gray-50 dark:bg-gray-900 cursor-grab"
             style={{ cursor: dragging ? 'grabbing' : 'grab' }}
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
@@ -3792,14 +3792,14 @@ const ScriptGraphView = ({ data, onNav }) => {
 
           {/* Selected Script Info */}
           {selectedScript && (
-            <div className="bg-white border-t border-gray-200 px-6 py-3 flex items-center gap-4">
+            <div className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 px-6 py-3 flex items-center gap-4">
               <Code size={16} className="text-amber-500" />
               <div className="flex-1">
-                <span className="font-medium text-gray-800">{selectedScript.id}</span>
+                <span className="font-medium text-gray-800 dark:text-white">{selectedScript.id}</span>
                 {selectedScript.isOrphan && <Badge color="ext" size="xs" className="ml-2">Unused?</Badge>}
                 {selectedScript.isRoot && <Badge color="script" size="xs" className="ml-2">Entry Point</Badge>}
-                <span className="text-gray-400 mx-2">·</span>
-                <span className="text-sm text-gray-500">Calls {selectedScript.callCount} · Called by {selectedScript.callerCount}</span>
+                <span className="text-gray-400 dark:text-gray-500 mx-2">·</span>
+                <span className="text-sm text-gray-500 dark:text-gray-400">Calls {selectedScript.callCount} · Called by {selectedScript.callerCount}</span>
               </div>
               <button
                 onClick={() => onNav('script', selectedScript.id, db.name)}
@@ -3949,8 +3949,8 @@ const GlobalSearchView = ({ data, onNav }) => {
           <Search size={24} className="text-white" />
         </div>
         <div className="flex-1">
-          <h2 className="text-xl font-bold text-gray-800">Global Search</h2>
-          <p className="text-sm text-gray-500">Search across all databases, tables, fields, scripts, and more</p>
+          <h2 className="text-xl font-bold text-gray-800 dark:text-white">Global Search</h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Search across all databases, tables, fields, scripts, and more</p>
         </div>
       </div>
 
@@ -3963,7 +3963,7 @@ const GlobalSearchView = ({ data, onNav }) => {
             value={query}
             onChange={e => setQuery(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && performSearch()}
-            className="w-full pl-12 pr-4 py-3 text-sm bg-white border border-gray-300 rounded-xl text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-400"
+            className="w-full pl-12 pr-4 py-3 text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl text-gray-700 dark:text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-400"
           />
         </div>
         <button
@@ -3985,10 +3985,10 @@ const GlobalSearchView = ({ data, onNav }) => {
           </div>
           <div className="flex flex-wrap gap-2">
             {history.map((h, i) => (
-              <div key={i} className="flex items-center gap-1 bg-white border border-gray-200 rounded-lg pr-1 group">
+              <div key={i} className="flex items-center gap-1 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg pr-1 group">
                 <button
                   onClick={() => handleHistoryClick(h)}
-                  className="px-3 py-1.5 text-sm text-gray-600 hover:text-blue-600 transition-colors"
+                  className="px-3 py-1.5 text-sm text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                 >
                   {h}
                 </button>
@@ -4006,7 +4006,7 @@ const GlobalSearchView = ({ data, onNav }) => {
 
       {results && (
         <div className="space-y-4">
-          <div className="text-sm text-gray-500 mb-4">
+          <div className="text-sm text-gray-500 dark:text-gray-400 mb-4">
             Found {totalResults} result{totalResults !== 1 ? 's' : ''} for "{query}"
           </div>
 
@@ -4033,8 +4033,8 @@ const GlobalSearchView = ({ data, onNav }) => {
           )}
 
           {totalResults === 0 && (
-            <div className="text-center py-12 text-gray-500">
-              <Search size={48} className="mx-auto mb-4 text-gray-300" />
+            <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+              <Search size={48} className="mx-auto mb-4 text-gray-300 dark:text-gray-600" />
               <p>No results found for "{query}"</p>
             </div>
           )}
@@ -4042,8 +4042,8 @@ const GlobalSearchView = ({ data, onNav }) => {
       )}
 
       {!results && (
-        <div className="text-center py-12 text-gray-400">
-          <Search size={48} className="mx-auto mb-4 text-gray-200" />
+        <div className="text-center py-12 text-gray-400 dark:text-gray-500">
+          <Search size={48} className="mx-auto mb-4 text-gray-200 dark:text-gray-700" />
           <p>Enter a search term and press Enter or click Search</p>
         </div>
       )}
@@ -4052,7 +4052,7 @@ const GlobalSearchView = ({ data, onNav }) => {
 };
 
 const SearchResultSection = ({ title, items, type, onNav, renderItem }) => (
-  <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+  <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden shadow-sm">
     <div className={`${C[type].light} px-4 py-3 border-b ${C[type].border} flex items-center gap-3`}>
       <Icon type={type} size={16} className={C[type].text} />
       <span className={`font-medium ${C[type].text}`}>{title}</span>
@@ -4111,7 +4111,7 @@ const FileUploader = ({ onDataLoaded, darkMode, toggleDarkMode }) => {
   };
 
   return (
-    <div className={`min-h-screen py-8 px-4 overflow-auto transition-colors ${darkMode ? 'bg-gray-900' : 'bg-gradient-to-br from-gray-50 via-white to-gray-100'}`}>
+    <div className={`min-h-screen py-8 px-4 overflow-auto transition-colors ${darkMode ? 'dark bg-gray-900' : 'bg-gradient-to-br from-gray-50 via-white to-gray-100'}`}>
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header */}
         <div className="text-center relative">
@@ -4223,15 +4223,15 @@ const FileUploader = ({ onDataLoaded, darkMode, toggleDarkMode }) => {
         {/* Privacy & Disclaimer Row */}
         <div className="grid md:grid-cols-2 gap-6">
           {/* Privacy Card */}
-          <div className="bg-white rounded-2xl shadow-xl p-6 border border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 border border-gray-200 dark:border-gray-700">
+            <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
               <Shield size={20} className="text-emerald-500" />
               Privacy & Data Storage
             </h2>
-            <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3 mb-4">
-              <p className="text-emerald-800 font-medium text-sm">Your data never leaves your browser.</p>
+            <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-lg p-3 mb-4">
+              <p className="text-emerald-800 dark:text-emerald-400 font-medium text-sm">Your data never leaves your browser.</p>
             </div>
-            <ul className="text-gray-600 text-sm space-y-2">
+            <ul className="text-gray-600 dark:text-gray-300 text-sm space-y-2">
               <li className="flex items-start gap-2">
                 <span className="text-emerald-500 mt-0.5">✓</span>
                 <span>All DDR XML files are processed <strong>entirely in your browser</strong></span>
@@ -4252,12 +4252,12 @@ const FileUploader = ({ onDataLoaded, darkMode, toggleDarkMode }) => {
           </div>
 
           {/* Disclaimer Card */}
-          <div className="bg-white rounded-2xl shadow-xl p-6 border border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 border border-gray-200 dark:border-gray-700">
+            <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
               <AlertTriangle size={20} className="text-amber-500" />
               Disclaimer
             </h2>
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 text-sm text-amber-800">
+            <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4 text-sm text-amber-800 dark:text-amber-400">
               <p className="mb-2">
                 <strong>This tool is provided "as-is" without warranty of any kind.</strong>
               </p>
@@ -4403,14 +4403,14 @@ export default function DDRExplorer() {
 
     return (
       <div className="p-5">
-        <h2 className="font-semibold text-gray-800 mb-3">{selected.name || selected.id}</h2>
-        <pre className="text-xs bg-gray-50 p-4 rounded-xl overflow-auto text-gray-600 border border-gray-200">{JSON.stringify(selected, null, 2)}</pre>
+        <h2 className="font-semibold text-gray-800 dark:text-gray-200 mb-3">{selected.name || selected.id}</h2>
+        <pre className="text-xs bg-gray-50 dark:bg-gray-900 p-4 rounded-xl overflow-auto text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700">{JSON.stringify(selected, null, 2)}</pre>
       </div>
     );
   };
 
   return (
-    <div className={`h-screen flex flex-col ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+    <div className={`h-screen flex flex-col ${darkMode ? 'dark bg-gray-900' : 'bg-gray-50'}`}>
       {/* Header */}
       <div className={`px-5 py-3 flex items-center gap-5 shadow-sm border-b ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
         <div className="flex items-center gap-3">
@@ -4444,7 +4444,7 @@ export default function DDRExplorer() {
               className={`px-3 py-2 rounded-md text-sm font-medium transition-all ${
                 view === v.id
                   ? 'bg-gradient-to-r from-blue-500 to-violet-500 text-white shadow-lg'
-                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200'
+                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-gray-600'
               }`}
             >
               {v.label}
@@ -4464,7 +4464,7 @@ export default function DDRExplorer() {
 
       {/* Main content */}
       {view === 'search' ? (
-        <div className="flex-1 overflow-auto bg-gray-50">
+        <div className="flex-1 overflow-auto bg-gray-50 dark:bg-gray-900">
           <GlobalSearchView data={data} onNav={handleNav} />
         </div>
       ) : view === 'erd' ? (
@@ -4476,21 +4476,21 @@ export default function DDRExplorer() {
           <ScriptGraphView data={data} onNav={handleNav} />
         </div>
       ) : view === 'audit' ? (
-        <div className="flex-1 overflow-auto bg-gray-50">
+        <div className="flex-1 overflow-auto bg-gray-50 dark:bg-gray-900">
           <AuditView data={data} analysis={analysis} onNav={handleNav} />
         </div>
       ) : view === 'reportcard' ? (
-        <div className="flex-1 overflow-auto bg-gray-50">
+        <div className="flex-1 overflow-auto bg-gray-50 dark:bg-gray-900">
           <ReportCardView analysis={analysis} data={data} />
         </div>
       ) : view === 'crossfile' ? (
-        <div className="flex-1 overflow-auto bg-gray-50">
+        <div className="flex-1 overflow-auto bg-gray-50 dark:bg-gray-900">
           <CrossFileView data={data} onNav={handleNav} />
         </div>
       ) : (
         <div className="flex-1 flex overflow-hidden">
           {/* Category nav */}
-          <div className="w-44 bg-white border-r border-gray-200 p-3">
+          <div className="w-44 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 p-3">
             {categories.map(cat => (
               <button
                 key={cat.id}
@@ -4498,7 +4498,7 @@ export default function DDRExplorer() {
                 className={`w-full text-left px-3 py-2.5 rounded-xl mb-1 flex items-center gap-3 text-sm transition-all ${
                   category === cat.id
                     ? `${C[cat.icon].bg} text-white shadow-lg`
-                    : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700'
+                    : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200'
                 }`}
               >
                 <Icon type={cat.icon} size={16} />
@@ -4510,11 +4510,11 @@ export default function DDRExplorer() {
 
           {/* Item list */}
           <div
-            className="w-72 bg-gray-50 border-r border-gray-200 flex flex-col"
+            className="w-72 bg-gray-50 dark:bg-gray-700 border-r border-gray-200 dark:border-gray-600 flex flex-col"
             tabIndex={0}
             onKeyDown={handleKeyDown}
           >
-            <div className="p-3 border-b border-gray-200 space-y-2">
+            <div className="p-3 border-b border-gray-200 dark:border-gray-600 space-y-2">
               <div className="relative">
                 <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input
@@ -4522,7 +4522,7 @@ export default function DDRExplorer() {
                   placeholder={`Search ${currentCat?.label || ''}...`}
                   value={search}
                   onChange={e => setSearch(e.target.value)}
-                  className="w-full pl-10 pr-3 py-2.5 text-sm bg-white border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                  className="w-full pl-10 pr-3 py-2.5 text-sm bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-lg text-gray-700 dark:text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
                 />
               </div>
               <div className="flex gap-1">
@@ -4538,7 +4538,7 @@ export default function DDRExplorer() {
                     className={`flex-1 flex items-center justify-center gap-1 py-1.5 rounded-md text-xs font-medium transition-all ${
                       sortMode === s.id
                         ? 'bg-blue-500 text-white shadow-sm'
-                        : 'bg-white border border-gray-200 text-gray-500 hover:bg-gray-100'
+                        : 'bg-white dark:bg-gray-600 border border-gray-200 dark:border-gray-500 text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-500'
                     }`}
                     title={`Sort by ${s.label}`}
                   >
@@ -4553,10 +4553,10 @@ export default function DDRExplorer() {
                 <button
                   key={i}
                   onClick={() => setSelected(item)}
-                  className={`w-full text-left px-4 py-3 border-b border-gray-200/50 flex items-center gap-3 text-sm transition-all ${
+                  className={`w-full text-left px-4 py-3 border-b border-gray-200/50 dark:border-gray-600/50 flex items-center gap-3 text-sm transition-all ${
                     selected === item
-                      ? 'bg-blue-50 text-blue-600 border-l-2 border-l-blue-500'
-                      : 'text-gray-600 hover:bg-gray-100 hover:text-gray-800 border-l-2 border-l-transparent'
+                      ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border-l-2 border-l-blue-500'
+                      : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 hover:text-gray-800 dark:hover:text-gray-100 border-l-2 border-l-transparent'
                   }`}
                 >
                   <Icon type={currentCat?.icon} size={14} className={selected === item ? 'text-blue-500' : 'text-gray-400'} />
@@ -4567,7 +4567,7 @@ export default function DDRExplorer() {
           </div>
 
           {/* Detail panel */}
-          <div className="flex-1 overflow-hidden bg-white">
+          <div className="flex-1 overflow-hidden bg-white dark:bg-gray-800">
             {renderDetail()}
           </div>
         </div>
