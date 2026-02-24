@@ -661,6 +661,14 @@ const TODetail = ({ to, dbName, reverseRefs, data, onNav }) => {
 
 // Relationship detail panel
 const RelDetail = ({ rel, dbName, onNav }) => {
+  const operatorLabel = (type) => {
+    const ops = { Equal: '=', NotEqual: '≠', GreaterThan: '>', GreaterThanOrEqual: '≥', LessThan: '<', LessThanOrEqual: '≤', CartesianJoin: '×' };
+    return ops[type] || type;
+  };
+
+  const hasCascade = rel.leftCascadeCreate || rel.leftCascadeDelete || rel.rightCascadeCreate || rel.rightCascadeDelete;
+  const hasSort = (rel.leftSort?.length > 0) || (rel.rightSort?.length > 0);
+
   return (
     <div className="h-full flex flex-col overflow-hidden">
       <div className="p-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
@@ -669,34 +677,294 @@ const RelDetail = ({ rel, dbName, onNav }) => {
             <GitBranch size={18} className="text-white" />
           </div>
           <div>
-            <h2 className="font-semibold text-gray-800 dark:text-gray-100 text-lg">Relationship</h2>
-            <div className="text-sm text-gray-500 dark:text-gray-400">ID: {rel.id}</div>
+            <h2 className="font-semibold text-gray-800 dark:text-gray-100 text-lg">{rel.leftTable} ↔ {rel.rightTable}</h2>
+            <div className="text-sm text-gray-500 dark:text-gray-400">{rel.predicates?.length || 0} predicate{rel.predicates?.length !== 1 ? 's' : ''}</div>
           </div>
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto p-5 bg-gray-50 dark:bg-gray-900">
-        <div className="flex items-center justify-between gap-6 p-5 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
-          <div className="text-center">
+      <div className="flex-1 overflow-auto p-4 space-y-2 bg-gray-50 dark:bg-gray-900">
+        {/* Table Occurrences */}
+        <Section title="Table Occurrences" count={2} icon={<Layers size={14} className="text-violet-500" />} color="to">
+          <div className="p-3 flex items-center justify-center gap-6">
             <NavLink type="to" name={rel.leftTable} onClick={() => onNav('to', rel.leftTable, dbName)} />
+            <span className="text-gray-400 dark:text-gray-500 text-lg">↔</span>
+            <NavLink type="to" name={rel.rightTable} onClick={() => onNav('to', rel.rightTable, dbName)} />
           </div>
-          <div className="flex-1 flex flex-col items-center gap-2">
+        </Section>
+
+        {/* Predicates */}
+        <Section title="Join Predicates" count={rel.predicates?.length} icon={<Link2 size={14} className="text-pink-500" />} color="rel">
+          <div className="p-3 space-y-2">
             {rel.predicates?.map((p, i) => (
-              <div key={i} className="text-sm bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-4 py-2 text-center">
-                <div className="font-mono text-gray-700 dark:text-gray-200">{p.leftField} <span className="text-pink-500 dark:text-pink-400">{p.type === 'Equal' ? '=' : p.type}</span> {p.rightField}</div>
-                {(p.cascadeCreate || p.cascadeDelete) && (
-                  <div className="text-[11px] text-gray-500 dark:text-gray-400 mt-1">
-                    {p.cascadeCreate && <span className="mr-3">↳ Create</span>}
-                    {p.cascadeDelete && <span>↳ Delete</span>}
-                  </div>
-                )}
+              <div key={i} className="flex items-center gap-3 bg-white dark:bg-gray-800 rounded-lg px-4 py-3 border border-gray-200 dark:border-gray-700">
+                <span className="font-mono text-sm text-gray-700 dark:text-gray-200 flex-1 text-right">{p.leftField}</span>
+                <span className="text-pink-500 dark:text-pink-400 font-bold text-lg w-6 text-center">{operatorLabel(p.type)}</span>
+                <span className="font-mono text-sm text-gray-700 dark:text-gray-200 flex-1">{p.rightField}</span>
               </div>
             ))}
           </div>
-          <div className="text-center">
-            <NavLink type="to" name={rel.rightTable} onClick={() => onNav('to', rel.rightTable, dbName)} />
+        </Section>
+
+        {/* Cascade Rules */}
+        {hasCascade && (
+          <Section title="Cascade Rules" count={null} icon={<ArrowRight size={14} className="text-amber-500" />} color="field">
+            <div className="p-3 grid grid-cols-2 gap-3">
+              <div>
+                <div className="text-[10px] font-medium text-gray-500 dark:text-gray-400 uppercase mb-2">{rel.leftTable}</div>
+                <div className="space-y-1 text-sm">
+                  {rel.leftCascadeCreate && <div className="text-green-600 dark:text-green-400">Allow creation of related records</div>}
+                  {rel.leftCascadeDelete && <div className="text-red-600 dark:text-red-400">Delete related records</div>}
+                  {!rel.leftCascadeCreate && !rel.leftCascadeDelete && <div className="text-gray-400 dark:text-gray-500 italic">None</div>}
+                </div>
+              </div>
+              <div>
+                <div className="text-[10px] font-medium text-gray-500 dark:text-gray-400 uppercase mb-2">{rel.rightTable}</div>
+                <div className="space-y-1 text-sm">
+                  {rel.rightCascadeCreate && <div className="text-green-600 dark:text-green-400">Allow creation of related records</div>}
+                  {rel.rightCascadeDelete && <div className="text-red-600 dark:text-red-400">Delete related records</div>}
+                  {!rel.rightCascadeCreate && !rel.rightCascadeDelete && <div className="text-gray-400 dark:text-gray-500 italic">None</div>}
+                </div>
+              </div>
+            </div>
+          </Section>
+        )}
+
+        {/* Sort Orders */}
+        {hasSort && (
+          <Section title="Sort Orders" count={null} icon={<ArrowUpDown size={14} className="text-blue-500" />} color="table">
+            <div className="p-3 space-y-3">
+              {rel.leftSort?.length > 0 && (
+                <div>
+                  <div className="text-[10px] font-medium text-gray-500 dark:text-gray-400 uppercase mb-1.5">{rel.leftTable}</div>
+                  {rel.leftSort.map((s, i) => (
+                    <div key={i} className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200 ml-2">
+                      {s.direction === 'Descending' ? <ArrowDownAZ size={14} className="text-blue-400" /> : <ArrowUpAZ size={14} className="text-blue-400" />}
+                      <span className="font-mono">{s.field}</span>
+                      <span className="text-xs text-gray-400">({s.direction})</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {rel.rightSort?.length > 0 && (
+                <div>
+                  <div className="text-[10px] font-medium text-gray-500 dark:text-gray-400 uppercase mb-1.5">{rel.rightTable}</div>
+                  {rel.rightSort.map((s, i) => (
+                    <div key={i} className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200 ml-2">
+                      {s.direction === 'Descending' ? <ArrowDownAZ size={14} className="text-blue-400" /> : <ArrowUpAZ size={14} className="text-blue-400" />}
+                      <span className="font-mono">{s.field}</span>
+                      <span className="text-xs text-gray-400">({s.direction})</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </Section>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// Custom Function detail panel
+const CFDetail = ({ cf, dbName, data }) => {
+  const signature = `${cf.name}( ${cf.parameterList?.join(' ; ') || ''} )`;
+
+  // Find which calculations reference this custom function
+  const usedIn = useMemo(() => {
+    const refs = [];
+    if (!data?.databases) return refs;
+    for (const d of data.databases) {
+      // Check field calculations
+      for (const table of d.tables || []) {
+        for (const field of table.fields || []) {
+          const calc = (field.calculation || '') + (field.autoEnterCalc || '') + (field.validationCalc || '');
+          if (calc.includes(cf.name)) {
+            refs.push({ type: 'field', label: `${table.name}::${field.name}`, db: d.name });
+          }
+        }
+      }
+      // Check script steps
+      for (const script of d.scripts || []) {
+        for (const step of script.steps || []) {
+          const stepText = JSON.stringify(step);
+          if (stepText.includes(cf.name)) {
+            refs.push({ type: 'script', label: script.name, db: d.name });
+            break;
+          }
+        }
+      }
+      // Check other custom functions
+      for (const otherCf of d.customFunctions || []) {
+        if (otherCf.name !== cf.name && otherCf.calculation?.includes(cf.name)) {
+          refs.push({ type: 'cf', label: otherCf.name, db: d.name });
+        }
+      }
+    }
+    return refs;
+  }, [cf.name, data]);
+
+  return (
+    <div className="h-full flex flex-col overflow-hidden">
+      <div className="p-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+        <div className="flex items-center gap-3">
+          <div className={`w-10 h-10 ${C.cf.bg} rounded-xl flex items-center justify-center shadow-lg`}>
+            <Sparkles size={18} className="text-white" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <h2 className="font-semibold text-gray-800 dark:text-gray-100 text-lg truncate">{cf.name}</h2>
+            <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+              <span>{cf.parameterList?.length || 0} parameter{cf.parameterList?.length !== 1 ? 's' : ''}</span>
+              {!cf.visible && <Badge color="rel" size="xs">Hidden</Badge>}
+            </div>
           </div>
         </div>
+      </div>
+
+      <div className="flex-1 overflow-auto p-4 space-y-2 bg-gray-50 dark:bg-gray-900">
+        {/* Signature */}
+        <Section title="Signature" count={null} icon={<Code size={14} className="text-cyan-500" />} color="cf">
+          <div className="p-3">
+            <div className="font-mono text-sm bg-white dark:bg-gray-800 rounded-lg px-4 py-3 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-100 overflow-x-auto">
+              {signature}
+            </div>
+            {cf.parameterList?.length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {cf.parameterList.map((p, i) => (
+                  <Badge key={i} color="cf" size="xs">{p}</Badge>
+                ))}
+              </div>
+            )}
+          </div>
+        </Section>
+
+        {/* Calculation */}
+        <Section title="Calculation" count={null} icon={<FileText size={14} className="text-violet-500" />} color="field">
+          <div className="p-3">
+            <pre className="text-xs bg-white dark:bg-gray-800 p-4 rounded-lg overflow-auto font-mono text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-700 whitespace-pre-wrap leading-relaxed max-h-96">{cf.calculation || '(empty)'}</pre>
+          </div>
+        </Section>
+
+        {/* Usage */}
+        <Section title="Used In" count={usedIn.length} icon={<Activity size={14} className="text-green-500" />} color="table" defaultOpen={usedIn.length > 0}>
+          {usedIn.length > 0 ? (
+            <div className="p-3 space-y-1.5">
+              {usedIn.map((ref, i) => (
+                <div key={i} className="flex items-center gap-2 text-sm">
+                  <Badge color={ref.type === 'field' ? 'field' : ref.type === 'script' ? 'script' : 'cf'} size="xs">{ref.type}</Badge>
+                  <span className="text-gray-700 dark:text-gray-200 font-mono text-xs">{ref.label}</span>
+                  {ref.db !== dbName && <span className="text-[10px] text-gray-400">({ref.db})</span>}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="p-3 text-sm text-gray-400 dark:text-gray-500 italic">Not referenced in any calculations</div>
+          )}
+        </Section>
+      </div>
+    </div>
+  );
+};
+
+// Value List detail panel
+const VLDetail = ({ vl, dbName, onNav }) => {
+  const typeLabel = vl.type === 'external' ? 'External' : vl.type === 'field' ? 'Field-Based' : 'Custom Values';
+  const typeColor = vl.type === 'external' ? 'ext' : vl.type === 'field' ? 'field' : 'vl';
+
+  return (
+    <div className="h-full flex flex-col overflow-hidden">
+      <div className="p-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+        <div className="flex items-center gap-3">
+          <div className={`w-10 h-10 ${C.vl.bg} rounded-xl flex items-center justify-center shadow-lg`}>
+            <List size={18} className="text-white" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <h2 className="font-semibold text-gray-800 dark:text-gray-100 text-lg truncate">{vl.name}</h2>
+            <Badge color={typeColor} size="xs">{typeLabel}</Badge>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex-1 overflow-auto p-4 space-y-2 bg-gray-50 dark:bg-gray-900">
+        {/* Custom values */}
+        {vl.type === 'custom' && vl.values?.length > 0 && (
+          <Section title="Values" count={vl.values.length} icon={<List size={14} className="text-yellow-500" />} color="vl">
+            <div className="p-3">
+              <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 divide-y divide-gray-100 dark:divide-gray-700 max-h-80 overflow-auto">
+                {vl.values.map((v, i) => (
+                  <div key={i} className="px-4 py-2 text-sm text-gray-700 dark:text-gray-200 flex items-center gap-3">
+                    <span className="text-[10px] text-gray-400 dark:text-gray-500 w-5 text-right font-mono">{i + 1}</span>
+                    <span>{v}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </Section>
+        )}
+
+        {vl.type === 'custom' && (!vl.values || vl.values.length === 0) && (
+          <Section title="Values" count={0} icon={<List size={14} className="text-yellow-500" />} color="vl">
+            <div className="p-3 text-sm text-gray-400 dark:text-gray-500 italic">No values defined</div>
+          </Section>
+        )}
+
+        {/* Field-based */}
+        {vl.type === 'field' && (
+          <>
+            <Section title="Primary Field" count={null} icon={<Hash size={14} className="text-blue-500" />} color="field">
+              <div className="p-3 space-y-2">
+                <div className="font-mono text-sm text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 rounded-lg px-4 py-3 border border-gray-200 dark:border-gray-700">
+                  {vl.sourceField}
+                </div>
+                {vl.primaryField && (
+                  <div className="flex gap-3 text-xs text-gray-500 dark:text-gray-400">
+                    {vl.primaryField.sort && <span className="flex items-center gap-1"><ArrowUpAZ size={12} /> Sorted</span>}
+                  </div>
+                )}
+              </div>
+            </Section>
+
+            {vl.secondaryField && (
+              <Section title="Secondary Field" count={null} icon={<Hash size={14} className="text-indigo-500" />} color="field">
+                <div className="p-3 space-y-2">
+                  <div className="font-mono text-sm text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 rounded-lg px-4 py-3 border border-gray-200 dark:border-gray-700">
+                    {vl.secondaryField.table}::{vl.secondaryField.name}
+                  </div>
+                  <div className="flex gap-3 text-xs text-gray-500 dark:text-gray-400">
+                    {vl.secondaryField.show && <span className="flex items-center gap-1"><Eye size={12} /> Show only second field</span>}
+                    {vl.secondaryField.sort && <span className="flex items-center gap-1"><ArrowUpAZ size={12} /> Sorted</span>}
+                  </div>
+                </div>
+              </Section>
+            )}
+
+            {vl.showRelated && (
+              <Section title="Show Related Values" count={null} icon={<Link2 size={14} className="text-green-500" />} color="to">
+                <div className="p-3">
+                  <div className="text-sm text-gray-700 dark:text-gray-200">
+                    Starting from: <span className="font-mono font-medium">{vl.showRelated.table}</span>
+                  </div>
+                </div>
+              </Section>
+            )}
+          </>
+        )}
+
+        {/* External */}
+        {vl.type === 'external' && vl.external && (
+          <Section title="External Source" count={null} icon={<ExternalLink size={14} className="text-rose-500" />} color="ext">
+            <div className="p-3 space-y-2">
+              <div className="flex items-center gap-2 text-sm">
+                <span className="text-gray-500 dark:text-gray-400">File:</span>
+                <span className="font-mono text-gray-700 dark:text-gray-200">{vl.external.fileName}</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                <span className="text-gray-500 dark:text-gray-400">Value List:</span>
+                <span className="font-mono text-gray-700 dark:text-gray-200">{vl.external.valueListName}</span>
+              </div>
+            </div>
+          </Section>
+        )}
       </div>
     </div>
   );
@@ -4315,17 +4583,23 @@ export default function DDRExplorer() {
   ];
 
   const currentCat = categories.find(c => c.id === category);
+  const getItemLabel = useCallback((item) => {
+    if (category === 'rels' && item.leftTable && item.rightTable) {
+      return `${item.leftTable} ↔ ${item.rightTable}`;
+    }
+    return item.name || item.id || '';
+  }, [category]);
   const filteredItems = useMemo(() => {
     if (!currentCat) return [];
     let items = currentCat.items.filter(item => {
-      const name = item.name || item.id || '';
+      const name = getItemLabel(item);
       return name.toLowerCase().includes(search.toLowerCase());
     });
 
     if (sortMode === 'alpha') {
-      items = [...items].sort((a, b) => (a.name || a.id || '').localeCompare(b.name || b.id || ''));
+      items = [...items].sort((a, b) => getItemLabel(a).localeCompare(getItemLabel(b)));
     } else if (sortMode === 'alpha-desc') {
-      items = [...items].sort((a, b) => (b.name || b.id || '').localeCompare(a.name || a.id || ''));
+      items = [...items].sort((a, b) => getItemLabel(b).localeCompare(getItemLabel(a)));
     } else if (sortMode === 'id') {
       items = [...items].sort((a, b) => {
         const aId = parseInt(a.id) || 0;
@@ -4335,7 +4609,7 @@ export default function DDRExplorer() {
     }
 
     return items;
-  }, [currentCat, search, sortMode]);
+  }, [currentCat, search, sortMode, getItemLabel]);
 
   // Keyboard navigation
   const handleKeyDown = useCallback((e) => {
@@ -4397,6 +4671,8 @@ export default function DDRExplorer() {
     if (category === 'layouts') return <LayoutDetail layout={selected} dbName={db.name} reverseRefs={reverseRefs} onNav={handleNav} />;
     if (category === 'tos') return <TODetail to={selected} dbName={db.name} reverseRefs={reverseRefs} data={data} onNav={handleNav} />;
     if (category === 'rels') return <RelDetail rel={selected} dbName={db.name} onNav={handleNav} />;
+    if (category === 'vls') return <VLDetail vl={selected} dbName={db.name} onNav={handleNav} />;
+    if (category === 'cfs') return <CFDetail cf={selected} dbName={db.name} data={data} />;
     if (category === 'accounts') return <AccountDetail account={selected} dbName={db.name} data={data} />;
     if (category === 'privsets') return <PrivSetDetail privset={selected} dbName={db.name} data={data} />;
     if (category === 'extprivs') return <ExtPrivDetail extpriv={selected} dbName={db.name} data={data} />;
@@ -4560,7 +4836,14 @@ export default function DDRExplorer() {
                   }`}
                 >
                   <Icon type={currentCat?.icon} size={14} className={selected === item ? 'text-blue-500' : 'text-gray-400'} />
-                  <span className="truncate">{item.name || item.id}</span>
+                  <span className="truncate flex-1">{getItemLabel(item)}</span>
+                  {category === 'vls' && item.type && (
+                    <span className={`text-[9px] px-1.5 py-0.5 rounded-full flex-shrink-0 ${
+                      item.type === 'field' ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400' :
+                      item.type === 'external' ? 'bg-rose-100 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400' :
+                      'bg-yellow-100 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-400'
+                    }`}>{item.type === 'field' ? 'Field' : item.type === 'external' ? 'Ext' : 'Custom'}</span>
+                  )}
                 </button>
               ))}
             </div>

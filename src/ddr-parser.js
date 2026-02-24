@@ -269,15 +269,40 @@ function parseTableOccurrences(doc) {
  */
 function parseRelationships(doc) {
   const rels = [];
-  
+
   for (const relEl of doc.querySelectorAll('RelationshipGraph > RelationshipList > Relationship')) {
+    const leftTableEl = relEl.querySelector('LeftTable');
+    const rightTableEl = relEl.querySelector('RightTable');
+
+    const parseSortList = (tableEl) => {
+      const sorts = [];
+      const sortListEl = tableEl?.querySelector('SortList');
+      if (sortListEl && sortListEl.getAttribute('value') === 'True') {
+        for (const sortEl of sortListEl.querySelectorAll('Sort')) {
+          const fieldEl = sortEl.querySelector('PrimaryField > Field');
+          sorts.push({
+            field: fieldEl?.getAttribute('name') || '',
+            table: fieldEl?.getAttribute('table') || '',
+            direction: sortEl.getAttribute('type') || 'Ascending',
+          });
+        }
+      }
+      return sorts;
+    };
+
     const rel = {
       id: relEl.getAttribute('id'),
-      leftTable: relEl.querySelector('LeftTable')?.getAttribute('name'),
-      rightTable: relEl.querySelector('RightTable')?.getAttribute('name'),
+      leftTable: leftTableEl?.getAttribute('name'),
+      rightTable: rightTableEl?.getAttribute('name'),
+      leftCascadeCreate: leftTableEl?.getAttribute('cascadeCreate') === 'True',
+      leftCascadeDelete: leftTableEl?.getAttribute('cascadeDelete') === 'True',
+      rightCascadeCreate: rightTableEl?.getAttribute('cascadeCreate') === 'True',
+      rightCascadeDelete: rightTableEl?.getAttribute('cascadeDelete') === 'True',
+      leftSort: parseSortList(leftTableEl),
+      rightSort: parseSortList(rightTableEl),
       predicates: [],
     };
-    
+
     for (const predEl of relEl.querySelectorAll('JoinPredicateList > JoinPredicate')) {
       const pred = {
         type: predEl.getAttribute('type') || 'Equal',
@@ -288,10 +313,10 @@ function parseRelationships(doc) {
       };
       rel.predicates.push(pred);
     }
-    
+
     rels.push(rel);
   }
-  
+
   return rels;
 }
 
@@ -614,29 +639,89 @@ function parseScript(scriptEl, folder) {
  */
 function parseValueLists(doc) {
   const vls = [];
-  
+
   for (const vlEl of doc.querySelectorAll('ValueListCatalog > ValueList')) {
+    const sourceEl = vlEl.querySelector('Source');
+    const sourceType = sourceEl?.getAttribute('value') || null;
+
     const vl = {
       id: vlEl.getAttribute('id'),
       name: vlEl.getAttribute('name'),
+      type: 'custom', // default, overridden below
       values: [],
       sourceField: null,
+      primaryField: null,
+      secondaryField: null,
+      showRelated: null,
+      external: null,
     };
-    
-    // Custom values
-    for (const valEl of vlEl.querySelectorAll('CustomValues > Value')) {
-      vl.values.push(valEl.textContent);
+
+    // Custom values - DDR XML stores these as newline-separated text in a <Text> element
+    const customValuesText = vlEl.querySelector('CustomValues > Text')?.textContent;
+    if (customValuesText) {
+      vl.values = customValuesText.split(/\r?\n/).filter(v => v.length > 0);
     }
-    
-    // Field-based
-    const srcFieldEl = vlEl.querySelector('Source > Field');
-    if (srcFieldEl) {
-      vl.sourceField = `${srcFieldEl.getAttribute('table')}::${srcFieldEl.getAttribute('name')}`;
+
+    if (sourceType === 'External') {
+      // External value list from another file
+      vl.type = 'external';
+      const extEl = vlEl.querySelector('External');
+      if (extEl) {
+        const fileRefEl = extEl.querySelector('FileReference');
+        const extVlEl = extEl.querySelector('ValueList');
+        vl.external = {
+          fileName: fileRefEl?.getAttribute('name') || '',
+          valueListName: extVlEl?.getAttribute('name') || '',
+          valueListId: extVlEl?.getAttribute('id') || '',
+        };
+      }
+    } else {
+      // Field-based value list
+      const primaryFieldEl = vlEl.querySelector('PrimaryField');
+      if (primaryFieldEl) {
+        vl.type = 'field';
+        const fieldEl = primaryFieldEl.querySelector('Field');
+        vl.primaryField = {
+          table: fieldEl?.getAttribute('table') || '',
+          name: fieldEl?.getAttribute('name') || '',
+          show: primaryFieldEl.getAttribute('show') !== 'False',
+          sort: primaryFieldEl.getAttribute('sort') === 'True',
+        };
+        vl.sourceField = `${vl.primaryField.table}::${vl.primaryField.name}`;
+
+        // Secondary field
+        const secondaryFieldEl = vlEl.querySelector('SecondaryField');
+        if (secondaryFieldEl) {
+          const secFieldEl = secondaryFieldEl.querySelector('Field');
+          if (secFieldEl) {
+            vl.secondaryField = {
+              table: secFieldEl.getAttribute('table') || '',
+              name: secFieldEl.getAttribute('name') || '',
+              show: secondaryFieldEl.getAttribute('show') === 'True',
+              sort: secondaryFieldEl.getAttribute('sort') === 'True',
+            };
+          }
+        }
+
+        // Show related values
+        const showRelatedEl = vlEl.querySelector('ShowRelated');
+        if (showRelatedEl && showRelatedEl.getAttribute('value') === 'True') {
+          const relTableEl = showRelatedEl.querySelector('Table');
+          vl.showRelated = {
+            table: relTableEl?.getAttribute('name') || '',
+          };
+        }
+      }
+
+      // If no primary field and has custom values, it's a custom VL
+      if (vl.values.length > 0 && !vl.primaryField) {
+        vl.type = 'custom';
+      }
     }
-    
+
     vls.push(vl);
   }
-  
+
   return vls;
 }
 
@@ -647,11 +732,15 @@ function parseCustomFunctions(doc) {
   const cfs = [];
 
   for (const cfEl of doc.querySelectorAll('CustomFunctionCatalog > CustomFunction')) {
+    const paramsRaw = cfEl.querySelector('Parameters')?.textContent || '';
     const cf = {
       id: cfEl.getAttribute('id'),
       name: cfEl.getAttribute('name'),
-      parameters: cfEl.querySelector('Parameters')?.textContent || '',
+      parameters: paramsRaw,
+      parameterList: paramsRaw ? paramsRaw.split(/\s*;\s*/).filter(p => p.length > 0) : [],
       calculation: cfEl.querySelector('Calculation')?.textContent || '',
+      visible: cfEl.getAttribute('visible') !== 'False',
+      arity: parseInt(cfEl.getAttribute('functionArity'), 10) || 0,
     };
     cfs.push(cf);
   }
