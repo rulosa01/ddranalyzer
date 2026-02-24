@@ -138,24 +138,59 @@ function parseField(fieldEl) {
     const indexAttr = storageEl.getAttribute('index');
     field.indexed = indexAttr && indexAttr !== 'None';
     field.indexType = indexAttr;
+    field.autoIndexed = storageEl.getAttribute('autoIndex') === 'True';
     const reps = parseInt(storageEl.getAttribute('maxRepetition') || '1');
     if (reps > 1) field.repetitions = reps;
+    // Stored vs unstored calculations
+    if (field.fieldType === 'Calculated' || field.fieldType === 'Summary') {
+      field.storedCalculation = storageEl.getAttribute('storeCalculationResults') !== 'False';
+    }
   }
-  
+
   // Auto-enter options
   const autoEnterEl = fieldEl.querySelector('AutoEnter');
   if (autoEnterEl) {
     field.autoEnter = parseAutoEnter(autoEnterEl);
     field.autoEnterCalc = autoEnterEl.querySelector('Calculation')?.textContent;
+    field.autoEnterOverwrite = autoEnterEl.getAttribute('overwriteExistingValue') === 'True';
+    field.autoEnterAlwaysEvaluate = autoEnterEl.getAttribute('alwaysEvaluate') === 'True';
+    field.autoEnterAllowEditing = autoEnterEl.getAttribute('allowEditing') !== 'False';
+    // Lookup details
+    const lookupEl = autoEnterEl.querySelector('Lookup');
+    if (lookupEl) {
+      const lookupTableEl = lookupEl.querySelector('Table');
+      const lookupFieldEl = lookupEl.querySelector('Field');
+      field.lookup = {
+        table: lookupTableEl?.getAttribute('name') || '',
+        field: lookupFieldEl ? `${lookupFieldEl.getAttribute('table') || ''}::${lookupFieldEl.getAttribute('name') || ''}` : '',
+        noMatchOption: lookupEl.querySelector('NoMatchCopyOption')?.getAttribute('value') || '',
+        copyEmpty: lookupEl.querySelector('CopyEmptyContent')?.getAttribute('value') === 'True',
+      };
+    }
   }
-  
+
   // Validation options
   const validationEl = fieldEl.querySelector('Validation');
   if (validationEl) {
     field.validation = parseValidation(validationEl);
     field.validationCalc = validationEl.querySelector('Calculation')?.textContent;
+    field.validationType = validationEl.getAttribute('type') || null;
+    field.validationErrorMessage = validationEl.querySelector('ErrorMessage')?.textContent || null;
   }
-  
+
+  // Summary field info
+  if (field.fieldType === 'Summary') {
+    const summaryEl = fieldEl.querySelector('SummaryInfo');
+    if (summaryEl) {
+      field.summaryInfo = {
+        operation: summaryEl.getAttribute('operation') || '',
+        restartForEachSortedGroup: summaryEl.getAttribute('restartForEachSortedGroup') === 'True',
+        summarizeRepetition: summaryEl.getAttribute('summarizeRepetition') || '',
+        summaryField: summaryEl.querySelector('SummaryField > Field')?.getAttribute('name') || '',
+      };
+    }
+  }
+
   // Calculation (for calculated fields)
   if (field.fieldType === 'Calculated') {
     const calcEl = fieldEl.querySelector(':scope > Calculation');
@@ -184,7 +219,7 @@ function parseFieldTriggers(fieldObjEl) {
     const scriptEl = triggerEl.querySelector('Script');
     if (scriptEl) {
       triggers.push({
-        type: triggerEl.getAttribute('type'),
+        type: triggerEl.getAttribute('event') || triggerEl.getAttribute('type'),
         script: scriptEl.getAttribute('name'),
       });
     }
@@ -306,8 +341,8 @@ function parseRelationships(doc) {
     for (const predEl of relEl.querySelectorAll('JoinPredicateList > JoinPredicate')) {
       const pred = {
         type: predEl.getAttribute('type') || 'Equal',
-        leftField: predEl.querySelector('LeftField')?.getAttribute('name'),
-        rightField: predEl.querySelector('RightField')?.getAttribute('name'),
+        leftField: predEl.querySelector('LeftField > Field')?.getAttribute('name') || predEl.querySelector('LeftField')?.getAttribute('name'),
+        rightField: predEl.querySelector('RightField > Field')?.getAttribute('name') || predEl.querySelector('RightField')?.getAttribute('name'),
         cascadeCreate: predEl.getAttribute('cascade_create') === 'True',
         cascadeDelete: predEl.getAttribute('cascade_delete') === 'True',
       };
@@ -342,7 +377,7 @@ function parseLayouts(doc) {
       const scriptEl = triggerEl.querySelector('Script');
       if (scriptEl) {
         layout.triggers.push({
-          type: triggerEl.getAttribute('type'),
+          type: triggerEl.getAttribute('event') || triggerEl.getAttribute('type'),
           script: scriptEl.getAttribute('name'),
           level: 'layout',
         });
@@ -375,14 +410,15 @@ function parseLayouts(doc) {
       for (const triggerEl of fieldObjEl.querySelectorAll('ScriptTriggers > Trigger')) {
         const scriptEl = triggerEl.querySelector('Script');
         if (scriptEl) {
+          const triggerType = triggerEl.getAttribute('event') || triggerEl.getAttribute('type');
           layout.fieldTriggers.push({
             field: ref,
-            type: triggerEl.getAttribute('type'),
+            type: triggerType,
             script: scriptEl.getAttribute('name'),
           });
           // Also add to main triggers list for script tracking
           layout.triggers.push({
-            type: triggerEl.getAttribute('type'),
+            type: triggerType,
             script: scriptEl.getAttribute('name'),
             level: 'field',
             field: ref,
@@ -675,11 +711,11 @@ function parseValueLists(doc) {
           valueListId: extVlEl?.getAttribute('id') || '',
         };
       }
-    } else {
-      // Field-based value list
+    } else if (sourceType === 'Field' || vlEl.querySelector('PrimaryField')) {
+      // Field-based value list — check Source attribute first, then PrimaryField element
+      vl.type = 'field';
       const primaryFieldEl = vlEl.querySelector('PrimaryField');
       if (primaryFieldEl) {
-        vl.type = 'field';
         const fieldEl = primaryFieldEl.querySelector('Field');
         vl.primaryField = {
           table: fieldEl?.getAttribute('table') || '',
@@ -712,11 +748,9 @@ function parseValueLists(doc) {
           };
         }
       }
-
-      // If no primary field and has custom values, it's a custom VL
-      if (vl.values.length > 0 && !vl.primaryField) {
-        vl.type = 'custom';
-      }
+    } else {
+      // Custom values only
+      vl.type = 'custom';
     }
 
     vls.push(vl);
@@ -732,7 +766,8 @@ function parseCustomFunctions(doc) {
   const cfs = [];
 
   for (const cfEl of doc.querySelectorAll('CustomFunctionCatalog > CustomFunction')) {
-    const paramsRaw = cfEl.querySelector('Parameters')?.textContent || '';
+    // Parameters can be an attribute or a child element depending on DDR version
+    const paramsRaw = cfEl.getAttribute('parameters') || cfEl.querySelector('Parameters')?.textContent || '';
     const cf = {
       id: cfEl.getAttribute('id'),
       name: cfEl.getAttribute('name'),
@@ -761,8 +796,8 @@ function parseAccounts(doc) {
       status: acctEl.getAttribute('status') || 'Active',
       privilegeSet: acctEl.getAttribute('privilegeSet'),
       managedBy: acctEl.getAttribute('managedBy') || 'FileMaker',
-      emptyPassword: acctEl.getAttribute('emptyPassword') === 'True',
-      changePasswordOnNextLogin: acctEl.getAttribute('changePasswordOnNextLogin') === 'True',
+      emptyPassword: acctEl.hasAttribute('emptyPassword') ? acctEl.getAttribute('emptyPassword') === 'True' : null,
+      changePasswordOnNextLogin: acctEl.hasAttribute('changePasswordOnNextLogin') ? acctEl.getAttribute('changePasswordOnNextLogin') === 'True' : null,
       description: acctEl.querySelector('Description')?.textContent || '',
     };
     accounts.push(account);
