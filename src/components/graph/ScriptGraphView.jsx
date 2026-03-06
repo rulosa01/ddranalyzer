@@ -1,181 +1,92 @@
-import React, { useState, useMemo, useRef } from 'react';
-import { Code } from 'lucide-react';
-import Badge from '../ui/Badge';
+import React, { useState, useMemo } from 'react';
+import { Code, ArrowRight } from 'lucide-react';
 import NavLink from '../ui/NavLink';
 
 const ScriptGraphView = ({ data, onNav, activeDb = 0 }) => {
-  const [zoom, setZoom] = useState(1);
-  const [pan, setPan] = useState({ x: 0, y: 0 });
-  const [dragging, setDragging] = useState(false);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-  const [selectedScript, setSelectedScript] = useState(null);
-  const [showOrphans, setShowOrphans] = useState(true); // Show all by default
-  const [viewMode, setViewMode] = useState('list'); // 'graph' or 'list' - default to list
-  const svgRef = useRef(null);
+  const [showOrphans, setShowOrphans] = useState(true);
+  const [viewMode, setViewMode] = useState('list');
 
   const db = data?.databases?.[activeDb];
   const scripts = db?.scripts || [];
   const reverseRefs = data?.reverseRefs || {};
 
-  // Build script call graph
-  const graph = useMemo(() => {
-    if (scripts.length === 0) return { nodes: [], edges: [], width: 0, height: 0 };
+  // Build per-root call trees for flow view
+  const graphData = useMemo(() => {
+    if (scripts.length === 0) return { entryTrees: [], orphanTrees: [], standaloneOrphans: [], calls: {} };
 
-    // Build adjacency list and find roots
-    const calls = {};      // script -> scripts it calls
-    const callers = {};    // script -> scripts that call it
+    // Cross-file callers
+    const xFileCallers = {};
+    for (const ref of data?.crossFileRefs || []) {
+      if (ref.targetDb === db?.name) {
+        if (!xFileCallers[ref.targetScript]) xFileCallers[ref.targetScript] = [];
+        xFileCallers[ref.targetScript].push(ref);
+      }
+    }
+
+    // Build adjacency
+    const calls = {};
+    const calledBy = {};
     const allScripts = new Set(scripts.map(s => s.name));
 
     scripts.forEach(script => {
       calls[script.name] = [];
-      callers[script.name] = callers[script.name] || [];
-
+      calledBy[script.name] = calledBy[script.name] || [];
       (script.callsScripts || []).forEach(called => {
         if (!called.external && allScripts.has(called.name)) {
-          calls[script.name].push(called.name);
-          callers[called.name] = callers[called.name] || [];
-          callers[called.name].push(script.name);
+          if (!calls[script.name].includes(called.name)) calls[script.name].push(called.name);
+          calledBy[called.name] = calledBy[called.name] || [];
+          if (!calledBy[called.name].includes(script.name)) calledBy[called.name].push(script.name);
         }
       });
     });
 
-    // Find root scripts (not called by anything, or on layouts)
-    const roots = scripts.filter(s => {
-      const scriptCallers = reverseRefs.scriptCallers?.[s.name] || [];
-      const onLayouts = reverseRefs.scriptOnLayouts?.[s.name] || [];
-      return scriptCallers.length === 0 || onLayouts.length > 0;
-    });
+    // Find roots (no local callers)
+    const roots = scripts.filter(s => (calledBy[s.name] || []).length === 0).map(s => s.name);
 
-    // Find orphan scripts (not called and not on layouts)
-    const orphans = scripts.filter(s => {
-      const scriptCallers = reverseRefs.scriptCallers?.[s.name] || [];
-      const onLayouts = reverseRefs.scriptOnLayouts?.[s.name] || [];
-      return scriptCallers.length === 0 && onLayouts.length === 0;
-    });
+    // Classify roots
+    const entryTrees = [];
+    const orphanTrees = [];
+    const standaloneOrphans = [];
 
-    // Layout using levels
-    const levels = {};
-    const visited = new Set();
+    for (const root of roots) {
+      const onLayouts = (reverseRefs.scriptOnLayouts?.[root] || []).length > 0;
+      const hasXFile = (xFileCallers[root] || []).length > 0;
+      const hasCallees = (calls[root] || []).length > 0;
 
-    const assignLevel = (name, level) => {
-      if (visited.has(name)) return;
-      visited.add(name);
-      levels[name] = Math.max(levels[name] || 0, level);
-      (calls[name] || []).forEach(called => assignLevel(called, level + 1));
-    };
-
-    roots.forEach(r => assignLevel(r.name, 0));
-
-    // Handle any unvisited scripts
-    scripts.forEach(s => {
-      if (!visited.has(s.name)) {
-        levels[s.name] = 0;
+      if (onLayouts || hasXFile) {
+        entryTrees.push(root);
+      } else if (hasCallees) {
+        orphanTrees.push(root);
+      } else {
+        standaloneOrphans.push(root);
       }
-    });
-
-    // Group by level
-    const byLevel = {};
-    Object.entries(levels).forEach(([name, level]) => {
-      if (!byLevel[level]) byLevel[level] = [];
-      byLevel[level].push(name);
-    });
-
-    // Create nodes
-    const NODE_WIDTH = 160;
-    const NODE_HEIGHT = 36;
-    const H_PADDING = 40;
-    const V_PADDING = 60;
-
-    const nodes = [];
-    const nodeMap = {};
-
-    Object.entries(byLevel).forEach(([level, names]) => {
-      const levelNum = parseInt(level);
-      const levelWidth = names.length * (NODE_WIDTH + H_PADDING);
-      const startX = H_PADDING;
-
-      names.forEach((name, i) => {
-        const script = scripts.find(s => s.name === name);
-        const isOrphan = orphans.some(o => o.name === name);
-        const isRoot = roots.some(r => r.name === name);
-
-        if (!showOrphans && isOrphan && !isRoot) return;
-
-        const node = {
-          id: name,
-          script,
-          x: startX + i * (NODE_WIDTH + H_PADDING),
-          y: V_PADDING + levelNum * (NODE_HEIGHT + V_PADDING),
-          width: NODE_WIDTH,
-          height: NODE_HEIGHT,
-          isOrphan,
-          isRoot,
-          callCount: (calls[name] || []).length,
-          callerCount: (callers[name] || []).length,
-        };
-        nodes.push(node);
-        nodeMap[name] = node;
-      });
-    });
-
-    // Create edges
-    const edges = [];
-    scripts.forEach(script => {
-      const source = nodeMap[script.name];
-      if (!source) return;
-
-      (script.callsScripts || []).forEach(called => {
-        if (called.external) return;
-        const target = nodeMap[called.name];
-        if (!target) return;
-
-        const startX = source.x + source.width / 2;
-        const startY = source.y + source.height;
-        const endX = target.x + target.width / 2;
-        const endY = target.y;
-
-        edges.push({
-          id: `${source.id}-${target.id}`,
-          source: source.id,
-          target: target.id,
-          startX,
-          startY,
-          endX,
-          endY,
-        });
-      });
-    });
-
-    const maxX = Math.max(...nodes.map(n => n.x + n.width), 100) + H_PADDING * 2;
-    const maxY = Math.max(...nodes.map(n => n.y + n.height), 100) + V_PADDING * 2;
-
-    return { nodes, edges, width: maxX, height: maxY, orphanCount: orphans.length };
-  }, [scripts, reverseRefs, showOrphans]);
-
-  const handleMouseDown = (e) => {
-    if (e.target === svgRef.current || e.target.tagName === 'svg' || e.target.tagName === 'rect') {
-      setDragging(true);
-      setDragStart({ x: e.clientX - pan.x, y: e.clientY - pan.y });
     }
-  };
 
-  const handleMouseMove = (e) => {
-    if (dragging) {
-      setPan({ x: e.clientX - dragStart.x, y: e.clientY - dragStart.y });
+    // Handle cycles (scripts where everyone has a caller — no natural root)
+    const allReachable = new Set();
+    const markReachable = (name) => {
+      if (allReachable.has(name)) return;
+      allReachable.add(name);
+      (calls[name] || []).forEach(c => markReachable(c));
+    };
+    roots.forEach(r => markReachable(r));
+
+    const cycleRoots = [];
+    for (const script of scripts) {
+      if (!allReachable.has(script.name)) {
+        cycleRoots.push(script.name);
+        markReachable(script.name);
+      }
     }
-  };
 
-  const handleMouseUp = () => {
-    setDragging(false);
-  };
+    entryTrees.sort((a, b) => a.localeCompare(b));
+    orphanTrees.sort((a, b) => a.localeCompare(b));
+    standaloneOrphans.sort((a, b) => a.localeCompare(b));
 
-  const handleWheel = (e) => {
-    e.preventDefault();
-    const delta = e.deltaY > 0 ? 0.9 : 1.1;
-    setZoom(z => Math.max(0.2, Math.min(3, z * delta)));
-  };
+    return { entryTrees, orphanTrees, standaloneOrphans, cycleRoots, calls };
+  }, [scripts, reverseRefs, data?.crossFileRefs, db?.name]);
 
-  // Cross-file callers for current database scripts
+  // Cross-file callers for list view
   const crossFileCallers = useMemo(() => {
     const callers = {};
     for (const ref of data?.crossFileRefs || []) {
@@ -187,7 +98,7 @@ const ScriptGraphView = ({ data, onNav, activeDb = 0 }) => {
     return callers;
   }, [data?.crossFileRefs, db?.name]);
 
-  // Enhanced script list with cross-file info
+  // Enhanced script list for list view
   const scriptList = useMemo(() => {
     return scripts.map(script => {
       const callers = reverseRefs.scriptCallers?.[script.name] || [];
@@ -195,8 +106,6 @@ const ScriptGraphView = ({ data, onNav, activeDb = 0 }) => {
       const crossFile = crossFileCallers[script.name] || [];
       const calls = script.callsScripts?.filter(c => !c.external).length || 0;
       const externalCalls = script.callsScripts?.filter(c => c.external).length || 0;
-
-      // A script is reachable if it's called by other scripts, on layouts, or called from other files
       const isReachable = callers.length > 0 || onLayouts.length > 0 || crossFile.length > 0;
 
       return {
@@ -210,7 +119,6 @@ const ScriptGraphView = ({ data, onNav, activeDb = 0 }) => {
         isRoot: onLayouts.length > 0,
       };
     }).sort((a, b) => {
-      // Sort: entry points first, then by caller count, then alphabetically
       if (a.isRoot !== b.isRoot) return a.isRoot ? -1 : 1;
       if (a.isOrphan !== b.isOrphan) return a.isOrphan ? 1 : -1;
       return a.name.localeCompare(b.name);
@@ -229,6 +137,49 @@ const ScriptGraphView = ({ data, onNav, activeDb = 0 }) => {
     );
   }
 
+  const ScriptPill = ({ name, isOrphan }) => {
+    const onLayouts = reverseRefs.scriptOnLayouts?.[name] || [];
+    const isEntryPoint = onLayouts.length > 0;
+
+    return (
+      <button
+        onClick={() => onNav('script', name, db.name)}
+        className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all hover:shadow-md text-left max-w-52 truncate shrink-0 ${
+          isOrphan
+            ? 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 border-red-300 dark:border-red-700 hover:border-red-400'
+            : isEntryPoint
+              ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white border-amber-600 shadow-sm hover:shadow-lg'
+              : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-amber-300 dark:border-amber-600 hover:border-amber-500 dark:hover:border-amber-400'
+        }`}
+        title={name}
+      >
+        {name}
+      </button>
+    );
+  };
+
+  // Render a script's call tree as horizontal left-to-right flow
+  const renderCallTree = (name, visited, isOrphanTree) => {
+    const alreadySeen = visited.has(name);
+    visited.add(name);
+    const children = alreadySeen ? [] : (graphData.calls[name] || []);
+
+    return (
+      <div className="flex items-start" key={name}>
+        <ScriptPill name={name} isOrphan={isOrphanTree} />
+        {alreadySeen && <span className="text-[10px] text-gray-400 dark:text-gray-500 ml-1 self-center" title="Recursive call">↩</span>}
+        {children.length > 0 && (
+          <>
+            <ArrowRight size={14} className="text-gray-300 dark:text-gray-600 shrink-0 mx-1 mt-1.5" />
+            <div className="flex flex-col gap-1">
+              {children.map(child => renderCallTree(child, visited, isOrphanTree))}
+            </div>
+          </>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
@@ -243,7 +194,6 @@ const ScriptGraphView = ({ data, onNav, activeDb = 0 }) => {
           </p>
         </div>
 
-        {/* View mode toggle */}
         <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
           <button
             onClick={() => setViewMode('list')}
@@ -252,32 +202,23 @@ const ScriptGraphView = ({ data, onNav, activeDb = 0 }) => {
             List
           </button>
           <button
-            onClick={() => setViewMode('graph')}
-            className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${viewMode === 'graph' ? 'bg-white dark:bg-gray-600 shadow-sm text-gray-800 dark:text-gray-200' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'}`}
+            onClick={() => setViewMode('flow')}
+            className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${viewMode === 'flow' ? 'bg-white dark:bg-gray-600 shadow-sm text-gray-800 dark:text-gray-200' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'}`}
           >
-            Graph
+            Flow
           </button>
         </div>
 
-        {viewMode === 'graph' && (
-          <>
-            <label className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
-              <input
-                type="checkbox"
-                checked={showOrphans}
-                onChange={e => setShowOrphans(e.target.checked)}
-                className="rounded border-gray-300"
-              />
-              Show Unused ({orphanCount})
-            </label>
-
-            <div className="flex items-center gap-2 bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
-              <button onClick={() => setZoom(z => Math.max(0.2, z - 0.1))} className="px-3 py-1 text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-600 rounded-md">-</button>
-              <span className="text-sm text-gray-600 dark:text-gray-300 w-12 text-center">{Math.round(zoom * 100)}%</span>
-              <button onClick={() => setZoom(z => Math.min(3, z + 0.1))} className="px-3 py-1 text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-600 rounded-md">+</button>
-              <button onClick={() => { setZoom(1); setPan({ x: 0, y: 0 }); }} className="px-3 py-1 text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-600 rounded-md text-xs">Reset</button>
-            </div>
-          </>
+        {viewMode === 'flow' && (
+          <label className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+            <input
+              type="checkbox"
+              checked={showOrphans}
+              onChange={e => setShowOrphans(e.target.checked)}
+              className="rounded border-gray-300"
+            />
+            Show Unused ({graphData.orphanTrees.length + graphData.standaloneOrphans.length})
+          </label>
         )}
       </div>
 
@@ -355,118 +296,76 @@ const ScriptGraphView = ({ data, onNav, activeDb = 0 }) => {
           </div>
         </div>
       ) : (
-        /* Graph View */
-        <>
+        /* Flow View */
+        <div className="flex-1 overflow-auto bg-gray-50 dark:bg-gray-900 p-4 space-y-2">
           {/* Legend */}
-          <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-2 flex items-center gap-6">
+          <div className="flex items-center gap-5 mb-2 px-1">
             <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded bg-gradient-to-r from-amber-500 to-orange-500"></div>
-              <span className="text-xs text-gray-600 dark:text-gray-300">Entry Point (on layout/trigger)</span>
+              <div className="w-3 h-3 rounded bg-gradient-to-r from-amber-500 to-orange-500"></div>
+              <span className="text-[11px] text-gray-500 dark:text-gray-400">Entry Point</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded bg-white dark:bg-gray-700 border-2 border-amber-500"></div>
-              <span className="text-xs text-gray-600 dark:text-gray-300">Regular Script</span>
+              <div className="w-3 h-3 rounded bg-white dark:bg-gray-700 border-2 border-amber-400"></div>
+              <span className="text-[11px] text-gray-500 dark:text-gray-400">Sub-script</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded bg-red-100 border-2 border-red-400"></div>
-              <span className="text-xs text-gray-600 dark:text-gray-300">Potentially Unused</span>
+              <div className="w-3 h-3 rounded bg-red-50 border-2 border-red-300"></div>
+              <span className="text-[11px] text-gray-500 dark:text-gray-400">Potentially Unused</span>
             </div>
           </div>
 
-          {/* SVG Canvas */}
-          <div
-            className="flex-1 overflow-hidden bg-gray-50 dark:bg-gray-900 cursor-grab"
-            style={{ cursor: dragging ? 'grabbing' : 'grab' }}
-            onMouseDown={handleMouseDown}
-            onMouseMove={handleMouseMove}
-            onMouseUp={handleMouseUp}
-            onMouseLeave={handleMouseUp}
-            onWheel={handleWheel}
-          >
-            <svg
-              ref={svgRef}
-              width="100%"
-              height="100%"
-              style={{ minWidth: graph.width * zoom, minHeight: graph.height * zoom }}
-            >
-              <g transform={`translate(${pan.x}, ${pan.y}) scale(${zoom})`}>
-                <rect x="0" y="0" width={graph.width} height={graph.height} fill="#f9fafb" />
-                <defs>
-                  <pattern id="script-grid" width="40" height="40" patternUnits="userSpaceOnUse">
-                    <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e5e7eb" strokeWidth="1" />
-                  </pattern>
-                  <marker id="script-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
-                    <polygon points="0 0, 8 3, 0 6" fill="#9ca3af" />
-                  </marker>
-                  <linearGradient id="rootGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#f59e0b" />
-                    <stop offset="100%" stopColor="#ea580c" />
-                  </linearGradient>
-                </defs>
-                <rect x="0" y="0" width={graph.width} height={graph.height} fill="url(#script-grid)" />
+          {/* Entry point trees */}
+          {graphData.entryTrees.map(root => (
+            <div key={root} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 overflow-x-auto">
+              {renderCallTree(root, new Set(), false)}
+            </div>
+          ))}
 
-                {/* Edges */}
-                {graph.edges.map(edge => {
-                  const midY = (edge.startY + edge.endY) / 2;
-                  const path = `M ${edge.startX} ${edge.startY} C ${edge.startX} ${midY}, ${edge.endX} ${midY}, ${edge.endX} ${edge.endY}`;
-                  return (
-                    <path key={edge.id} d={path} fill="none" stroke="#9ca3af" strokeWidth={1.5} markerEnd="url(#script-arrow)" />
-                  );
-                })}
-
-                {/* Nodes */}
-                {graph.nodes.map(node => (
-                  <g
-                    key={node.id}
-                    transform={`translate(${node.x}, ${node.y})`}
-                    className="cursor-pointer"
-                    onClick={() => { setSelectedScript(node); onNav('script', node.id, db.name); }}
-                  >
-                    <rect
-                      width={node.width}
-                      height={node.height}
-                      rx="6"
-                      fill={node.isOrphan ? '#fee2e2' : node.isRoot ? 'url(#rootGradient)' : 'white'}
-                      stroke={selectedScript?.id === node.id ? '#1f2937' : node.isOrphan ? '#f87171' : '#f59e0b'}
-                      strokeWidth={selectedScript?.id === node.id ? 3 : 2}
-                    />
-                    <text
-                      x={node.width / 2}
-                      y={node.height / 2 + 4}
-                      textAnchor="middle"
-                      fontSize="10"
-                      fontWeight="500"
-                      fill={node.isRoot ? 'white' : '#374151'}
-                      className="pointer-events-none"
-                    >
-                      {node.id.length > 20 ? node.id.slice(0, 18) + '...' : node.id}
-                    </text>
-                  </g>
-                ))}
-              </g>
-            </svg>
-          </div>
-
-          {/* Selected Script Info */}
-          {selectedScript && (
-            <div className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 px-6 py-3 flex items-center gap-4">
-              <Code size={16} className="text-amber-500" />
-              <div className="flex-1">
-                <span className="font-medium text-gray-800 dark:text-white">{selectedScript.id}</span>
-                {selectedScript.isOrphan && <Badge color="ext" size="xs" className="ml-2">Unused?</Badge>}
-                {selectedScript.isRoot && <Badge color="script" size="xs" className="ml-2">Entry Point</Badge>}
-                <span className="text-gray-400 dark:text-gray-500 mx-2">·</span>
-                <span className="text-sm text-gray-500 dark:text-gray-400">Calls {selectedScript.callCount} · Called by {selectedScript.callerCount}</span>
+          {/* Cycle roots (rare — scripts in mutual recursion with no entry point) */}
+          {graphData.cycleRoots.length > 0 && (
+            <>
+              <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mt-4 px-1">
+                Cyclic References ({graphData.cycleRoots.length})
               </div>
-              <button
-                onClick={() => onNav('script', selectedScript.id, db.name)}
-                className="px-3 py-1.5 bg-amber-500 text-white text-sm rounded-lg hover:bg-amber-600 transition-colors"
-              >
-                View Details
-              </button>
+              {graphData.cycleRoots.map(root => (
+                <div key={root} className="bg-purple-50/50 dark:bg-purple-900/10 border border-purple-200 dark:border-purple-800 rounded-xl px-4 py-3 overflow-x-auto">
+                  {renderCallTree(root, new Set(), false)}
+                </div>
+              ))}
+            </>
+          )}
+
+          {graphData.entryTrees.length === 0 && graphData.cycleRoots.length === 0 && !showOrphans && (
+            <div className="text-center py-8 text-gray-400 dark:text-gray-500">
+              <p>No active script chains found. Enable "Show Unused" to see orphan scripts.</p>
             </div>
           )}
-        </>
+
+          {/* Orphan scripts */}
+          {showOrphans && (graphData.orphanTrees.length > 0 || graphData.standaloneOrphans.length > 0) && (
+            <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+              <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
+                Potentially Unused ({graphData.orphanTrees.length + graphData.standaloneOrphans.length} scripts)
+              </div>
+
+              {/* Orphan chains (have callees but no entry point) */}
+              {graphData.orphanTrees.map(root => (
+                <div key={root} className="bg-red-50/50 dark:bg-red-900/10 border border-red-200 dark:border-red-800 rounded-xl px-4 py-3 mb-2 overflow-x-auto">
+                  {renderCallTree(root, new Set(), true)}
+                </div>
+              ))}
+
+              {/* Standalone orphan scripts */}
+              {graphData.standaloneOrphans.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  {graphData.standaloneOrphans.map(name => (
+                    <ScriptPill key={name} name={name} isOrphan />
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       )}
     </div>
   );
