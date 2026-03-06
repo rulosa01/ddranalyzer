@@ -284,7 +284,7 @@ function parseTableOccurrences(doc) {
     const to = {
       id: toEl.getAttribute('id'),
       name: toEl.getAttribute('name'),
-      baseTable: toEl.getAttribute('basetable'),
+      baseTable: toEl.getAttribute('baseTable'),
     };
     
     // Check for external file reference (shadow TO)
@@ -424,6 +424,18 @@ function parseLayouts(doc) {
             field: ref,
           });
         }
+      }
+    }
+
+    // Also capture merge fields (in text objects) and portal fields (in FieldList)
+    for (const fieldEl of layoutEl.querySelectorAll('FieldList > Field')) {
+      const tableName = fieldEl.getAttribute('table');
+      const fieldName = fieldEl.getAttribute('name');
+      if (!tableName || !fieldName) continue;
+
+      const ref = `${tableName}::${fieldName}`;
+      if (!layout.fields.includes(ref)) {
+        layout.fields.push(ref);
       }
     }
 
@@ -937,7 +949,29 @@ function buildReverseReferences(databases) {
   
   for (const db of databases) {
     const dbName = db.name;
-    
+
+    // Build TO name → base table name mapping for resolving field references
+    const toToBase = {};
+    for (const to of db.tableOccurrences || []) {
+      if (to.baseTable && !to.externalFile) {
+        toToBase[to.name] = to.baseTable;
+      }
+    }
+
+    // Resolve a field ref (TO::Field) to base table key (BaseTable::Field)
+    // Returns { baseKey, via } where via is the TO name if different from base table
+    const resolveFieldRef = (fieldRef) => {
+      const idx = fieldRef.indexOf('::');
+      if (idx < 0) return { baseKey: fieldRef, via: null };
+      const toName = fieldRef.slice(0, idx);
+      const fieldName = fieldRef.slice(idx + 2);
+      const baseTable = toToBase[toName];
+      if (baseTable && baseTable !== toName) {
+        return { baseKey: `${baseTable}::${fieldName}`, via: toName };
+      }
+      return { baseKey: fieldRef, via: null };
+    };
+
     // Script callers and field references
     for (const script of db.scripts || []) {
       // Scripts this script calls
@@ -947,20 +981,21 @@ function buildReverseReferences(databases) {
           refs.scriptCallers[called.name].push({ script: script.name, db: dbName });
         }
       }
-      
+
       // Layouts this script goes to
       for (const layout of script.goesToLayouts || []) {
         if (!refs.layoutFromScripts[layout]) refs.layoutFromScripts[layout] = [];
         refs.layoutFromScripts[layout].push({ script: script.name, db: dbName });
       }
-      
-      // Fields this script references
+
+      // Fields this script references (resolve TO to base table)
       for (const fieldRef of script.fieldRefs || []) {
-        if (!refs.fieldInScripts[fieldRef]) refs.fieldInScripts[fieldRef] = [];
-        refs.fieldInScripts[fieldRef].push({ script: script.name, db: dbName });
+        const { baseKey, via } = resolveFieldRef(fieldRef);
+        if (!refs.fieldInScripts[baseKey]) refs.fieldInScripts[baseKey] = [];
+        refs.fieldInScripts[baseKey].push({ script: script.name, db: dbName, via });
       }
     }
-    
+
     // Layout references
     for (const layout of db.layouts || []) {
       // Scripts on this layout
@@ -974,20 +1009,21 @@ function buildReverseReferences(databases) {
           refs.scriptOnLayouts[scriptName].push({ layout: layout.name, db: dbName });
         }
       }
-      
-      // Fields on this layout
+
+      // Fields on this layout (resolve TO to base table, store TO name)
       for (const fieldRef of layout.fields || []) {
-        if (!refs.fieldOnLayouts[fieldRef]) refs.fieldOnLayouts[fieldRef] = [];
-        refs.fieldOnLayouts[fieldRef].push({ layout: layout.name, db: dbName });
+        const { baseKey, via } = resolveFieldRef(fieldRef);
+        if (!refs.fieldOnLayouts[baseKey]) refs.fieldOnLayouts[baseKey] = [];
+        refs.fieldOnLayouts[baseKey].push({ layout: layout.name, db: dbName, via });
       }
-      
+
       // TO for this layout
       if (layout.baseTable) {
         if (!refs.toLayouts[layout.baseTable]) refs.toLayouts[layout.baseTable] = [];
         refs.toLayouts[layout.baseTable].push({ layout: layout.name, db: dbName });
       }
     }
-    
+
     // Relationship TO references
     for (const rel of db.relationships || []) {
       if (rel.leftTable) {
@@ -999,20 +1035,21 @@ function buildReverseReferences(databases) {
         refs.toRelationships[rel.rightTable].push({ relationship: rel.id, side: 'right', db: dbName });
       }
     }
-    
-    // Field references in calculations
+
+    // Field references in calculations (resolve TO to base table)
     for (const table of db.tables || []) {
       for (const field of table.fields || []) {
         if (field.calcFieldRefs) {
           for (const ref of field.calcFieldRefs) {
-            if (!refs.fieldInCalcs[ref]) refs.fieldInCalcs[ref] = [];
-            refs.fieldInCalcs[ref].push({ table: table.name, field: field.name, db: dbName });
+            const { baseKey, via } = resolveFieldRef(ref);
+            if (!refs.fieldInCalcs[baseKey]) refs.fieldInCalcs[baseKey] = [];
+            refs.fieldInCalcs[baseKey].push({ table: table.name, field: field.name, db: dbName, via });
           }
         }
       }
     }
   }
-  
+
   return refs;
 }
 

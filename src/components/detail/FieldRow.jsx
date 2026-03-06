@@ -76,7 +76,10 @@ const FieldRow = ({ field, tableName, dbName, reverseRefs, onNav, highlight, onH
               <div className="text-[10px] font-medium text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wide">Used in {inScripts.length} Script(s)</div>
               <div className="flex flex-wrap gap-1.5">
                 {inScripts.slice(0, 10).map((ref, i) => (
-                  <NavLink key={i} type="script" name={ref.script} small onClick={() => onNav('script', ref.script, ref.db)} />
+                  <div key={i} className="flex items-center gap-1">
+                    <NavLink type="script" name={ref.script} small onClick={() => onNav('script', ref.script, ref.db)} />
+                    {ref.via && <span className="text-[10px] text-gray-400 dark:text-gray-500">via {ref.via}</span>}
+                  </div>
                 ))}
                 {inScripts.length > 10 && <span className="text-xs text-gray-500 dark:text-gray-400 self-center">+{inScripts.length - 10} more</span>}
               </div>
@@ -88,7 +91,12 @@ const FieldRow = ({ field, tableName, dbName, reverseRefs, onNav, highlight, onH
               <div className="text-[10px] font-medium text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wide">On {onLayouts.length} Layout(s)</div>
               <div className="flex flex-wrap gap-1.5">
                 {onLayouts.slice(0, 10).map((ref, i) => (
-                  <NavLink key={i} type="layout" name={ref.layout} small onClick={() => onNav('layout', ref.layout, ref.db)} />
+                  <div key={i} className="flex items-center gap-1">
+                    <NavLink type="layout" name={ref.layout} small onClick={() => onNav('layout', ref.layout, ref.db)} />
+                    {ref.via && (
+                      <NavLink type="to" name={ref.via} small onClick={() => onNav('to', ref.via, ref.db)} />
+                    )}
+                  </div>
                 ))}
                 {onLayouts.length > 10 && <span className="text-xs text-gray-500 dark:text-gray-400 self-center">+{onLayouts.length - 10} more</span>}
               </div>
