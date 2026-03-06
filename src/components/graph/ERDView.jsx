@@ -3,8 +3,7 @@ import { GitBranch, X } from 'lucide-react';
 import Badge from '../ui/Badge';
 import NavLink from '../ui/NavLink';
 
-const ERDView = ({ data, onNav }) => {
-  const [selectedDb, setSelectedDb] = useState(0);
+const ERDView = ({ data, onNav, activeDb = 0 }) => {
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [dragging, setDragging] = useState(false);
@@ -16,7 +15,7 @@ const ERDView = ({ data, onNav }) => {
   const svgRef = useRef(null);
   const containerRef = useRef(null);
 
-  const db = data?.databases?.[selectedDb];
+  const db = data?.databases?.[activeDb];
   const tos = db?.tableOccurrences || [];
   const rels = db?.relationships || [];
 
@@ -418,15 +417,6 @@ const ERDView = ({ data, onNav }) => {
           ))}
         </select>
 
-        {data.databases.length > 1 && (
-          <select
-            value={selectedDb}
-            onChange={e => { setSelectedDb(Number(e.target.value)); clearFilters(); }}
-            className="text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-          >
-            {data.databases.map((d, i) => <option key={i} value={i}>{d.name}</option>)}
-          </select>
-        )}
 
         {(focusedTO || baseTableFilter) && (
           <button

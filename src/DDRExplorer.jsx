@@ -31,6 +31,7 @@ export default function DDRExplorer() {
   const [category, setCategory] = useState('tables');
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState(null);
+  const [highlightField, setHighlightField] = useState(null);
   const [sortMode, setSortMode] = useState('default'); // 'default', 'alpha', 'alpha-desc', 'id'
   const { darkMode, toggleDarkMode } = useDarkMode();
 
@@ -104,11 +105,26 @@ export default function DDRExplorer() {
     }
   }, [filteredItems, selected, view]);
 
-  const handleNav = useCallback((type, name, targetDb) => {
+  const handleNav = useCallback((type, name, targetDb, extra) => {
     if (targetDb && targetDb !== db?.name) {
       const idx = data.databases.findIndex(d => d.name === targetDb);
       if (idx >= 0) setActiveDb(idx);
     }
+
+    // For fields, navigate to the parent table and highlight the field
+    if (type === 'field') {
+      const tableName = extra; // 4th arg is table name for field nav
+      setCategory('tables');
+      setView('explorer');
+      setHighlightField(name);
+      const targetDb2 = targetDb || db?.name;
+      const dbData = data.databases.find(d => d.name === targetDb2);
+      const table = dbData?.tables?.find(t => t.name === tableName);
+      if (table) setSelected(table);
+      return;
+    }
+
+    setHighlightField(null);
     const catMap = { table: 'tables', to: 'tos', layout: 'layouts', script: 'scripts', rel: 'rels', vl: 'vls', cf: 'cfs' };
     if (catMap[type]) {
       setCategory(catMap[type]);
@@ -141,7 +157,7 @@ export default function DDRExplorer() {
       </div>
     );
 
-    if (category === 'tables') return <TableDetail table={selected} dbName={db.name} reverseRefs={reverseRefs} data={data} onNav={handleNav} />;
+    if (category === 'tables') return <TableDetail table={selected} dbName={db.name} reverseRefs={reverseRefs} data={data} onNav={handleNav} highlightField={highlightField} onHighlightClear={() => setHighlightField(null)} />;
     if (category === 'scripts') return <ScriptDetail script={selected} dbName={db.name} reverseRefs={reverseRefs} data={data} onNav={handleNav} />;
     if (category === 'layouts') return <LayoutDetail layout={selected} dbName={db.name} reverseRefs={reverseRefs} onNav={handleNav} />;
     if (category === 'tos') return <TODetail to={selected} dbName={db.name} reverseRefs={reverseRefs} data={data} onNav={handleNav} />;
@@ -220,11 +236,11 @@ export default function DDRExplorer() {
         </div>
       ) : view === 'erd' ? (
         <div className="flex-1 overflow-hidden">
-          <ERDView data={data} onNav={handleNav} />
+          <ERDView data={data} onNav={handleNav} activeDb={activeDb} />
         </div>
       ) : view === 'scriptgraph' ? (
         <div className="flex-1 overflow-hidden">
-          <ScriptGraphView data={data} onNav={handleNav} />
+          <ScriptGraphView data={data} onNav={handleNav} activeDb={activeDb} />
         </div>
       ) : view === 'audit' ? (
         <div className="flex-1 overflow-auto bg-gray-50 dark:bg-gray-900">

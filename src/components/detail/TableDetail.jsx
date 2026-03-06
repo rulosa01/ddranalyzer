@@ -6,7 +6,7 @@ import NavLink from '../ui/NavLink';
 import Section from '../ui/Section';
 import FieldRow from './FieldRow';
 
-const TableDetail = ({ table, dbName, reverseRefs, data, onNav }) => {
+const TableDetail = ({ table, dbName, reverseRefs, data, onNav, highlightField, onHighlightClear }) => {
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
 
@@ -129,7 +129,7 @@ const TableDetail = ({ table, dbName, reverseRefs, data, onNav }) => {
         {/* Fields */}
         <div className="bg-white dark:bg-gray-800">
           {filteredFields.map((field, i) => (
-            <FieldRow key={i} field={field} tableName={table.name} dbName={dbName} reverseRefs={reverseRefs} onNav={onNav} />
+            <FieldRow key={i} field={field} tableName={table.name} dbName={dbName} reverseRefs={reverseRefs} onNav={onNav} highlight={field.name === highlightField} onHighlightClear={onHighlightClear} />
           ))}
         </div>
       </div>

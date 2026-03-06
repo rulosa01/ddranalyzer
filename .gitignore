@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# DDR XML exports (may contain sensitive database schema data)
+DDR XML/

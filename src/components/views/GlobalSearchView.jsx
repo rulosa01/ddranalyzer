@@ -212,7 +212,7 @@ const SearchResultSection = ({ title, items, type, onNav, renderItem }) => (
           type={type}
           name={renderItem ? renderItem(item) : item.name}
           small
-          onClick={() => onNav(type, item.name, item.db)}
+          onClick={() => type === 'field' ? onNav('field', item.name, item.db, item.table) : onNav(type, item.name, item.db)}
         />
       ))}
       {items.length > 50 && (

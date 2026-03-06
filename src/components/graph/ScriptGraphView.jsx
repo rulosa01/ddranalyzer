@@ -3,8 +3,7 @@ import { Code } from 'lucide-react';
 import Badge from '../ui/Badge';
 import NavLink from '../ui/NavLink';
 
-const ScriptGraphView = ({ data, onNav }) => {
-  const [selectedDb, setSelectedDb] = useState(0);
+const ScriptGraphView = ({ data, onNav, activeDb = 0 }) => {
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [dragging, setDragging] = useState(false);
@@ -14,7 +13,7 @@ const ScriptGraphView = ({ data, onNav }) => {
   const [viewMode, setViewMode] = useState('list'); // 'graph' or 'list' - default to list
   const svgRef = useRef(null);
 
-  const db = data?.databases?.[selectedDb];
+  const db = data?.databases?.[activeDb];
   const scripts = db?.scripts || [];
   const reverseRefs = data?.reverseRefs || {};
 
@@ -176,15 +175,6 @@ const ScriptGraphView = ({ data, onNav }) => {
     setZoom(z => Math.max(0.2, Math.min(3, z * delta)));
   };
 
-  if (!db || scripts.length === 0) {
-    return (
-      <div className="p-6 text-center text-gray-500">
-        <Code size={48} className="mx-auto mb-4 text-gray-300" />
-        <p>No scripts found</p>
-      </div>
-    );
-  }
-
   // Cross-file callers for current database scripts
   const crossFileCallers = useMemo(() => {
     const callers = {};
@@ -230,6 +220,15 @@ const ScriptGraphView = ({ data, onNav }) => {
   const orphanCount = scriptList.filter(s => s.isOrphan).length;
   const entryPointCount = scriptList.filter(s => s.isRoot).length;
 
+  if (!db || scripts.length === 0) {
+    return (
+      <div className="p-6 text-center text-gray-500">
+        <Code size={48} className="mx-auto mb-4 text-gray-300" />
+        <p>No scripts found</p>
+      </div>
+    );
+  }
+
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
@@ -259,16 +258,6 @@ const ScriptGraphView = ({ data, onNav }) => {
             Graph
           </button>
         </div>
-
-        {data.databases.length > 1 && (
-          <select
-            value={selectedDb}
-            onChange={e => setSelectedDb(Number(e.target.value))}
-            className="text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-          >
-            {data.databases.map((d, i) => <option key={i} value={i}>{d.name}</option>)}
-          </select>
-        )}
 
         {viewMode === 'graph' && (
           <>

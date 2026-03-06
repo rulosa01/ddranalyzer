@@ -1,11 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { ChevronRight, ChevronDown } from 'lucide-react';
 import { dtColors } from '../../constants/theme';
 import Badge from '../ui/Badge';
 import NavLink from '../ui/NavLink';
 
-const FieldRow = ({ field, tableName, dbName, reverseRefs, onNav }) => {
+const FieldRow = ({ field, tableName, dbName, reverseRefs, onNav, highlight, onHighlightClear }) => {
   const [expanded, setExpanded] = useState(false);
+  const rowRef = useRef(null);
+
+  useEffect(() => {
+    if (highlight && rowRef.current) {
+      rowRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      const timer = setTimeout(() => onHighlightClear?.(), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [highlight, onHighlightClear]);
   const fieldKey = `${tableName}::${field.name}`;
   const inScripts = reverseRefs?.fieldInScripts?.[fieldKey] || [];
   const onLayouts = reverseRefs?.fieldOnLayouts?.[fieldKey] || [];
@@ -13,7 +22,7 @@ const FieldRow = ({ field, tableName, dbName, reverseRefs, onNav }) => {
   const refCount = inScripts.length + onLayouts.length + inCalcs.length;
 
   return (
-    <div className={`border-b border-gray-100 dark:border-gray-700 transition-colors ${expanded ? 'bg-white dark:bg-gray-800' : 'hover:bg-gray-50 dark:hover:bg-gray-700'}`}>
+    <div ref={rowRef} className={`border-b border-gray-100 dark:border-gray-700 transition-colors ${highlight ? 'bg-blue-50 dark:bg-blue-900/30 border-l-3 border-l-blue-500 ring-1 ring-blue-300 dark:ring-blue-700' : expanded ? 'bg-white dark:bg-gray-800' : 'hover:bg-gray-50 dark:hover:bg-gray-700'}`}>
       <div className="px-4 py-3 flex items-start gap-3 cursor-pointer" onClick={() => setExpanded(!expanded)}>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
