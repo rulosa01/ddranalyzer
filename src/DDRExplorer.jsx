@@ -199,7 +199,6 @@ export default function DDRExplorer() {
           {[
             { id: 'explorer', label: 'Explorer' },
             { id: 'search', label: 'Search' },
-            { id: 'erd', label: 'ERD' },
             { id: 'scriptgraph', label: 'Scripts' },
             { id: 'audit', label: 'Audit' },
             { id: 'reportcard', label: 'Report' },
@@ -233,10 +232,6 @@ export default function DDRExplorer() {
       {view === 'search' ? (
         <div className="flex-1 overflow-auto bg-gray-50 dark:bg-gray-900">
           <GlobalSearchView data={data} onNav={handleNav} />
-        </div>
-      ) : view === 'erd' ? (
-        <div className="flex-1 overflow-hidden">
-          <ERDView data={data} onNav={handleNav} activeDb={activeDb} />
         </div>
       ) : view === 'scriptgraph' ? (
         <div className="flex-1 overflow-hidden">
@@ -275,75 +270,83 @@ export default function DDRExplorer() {
             ))}
           </div>
 
-          {/* Item list */}
-          <div
-            className="w-72 bg-gray-50 dark:bg-gray-700 border-r border-gray-200 dark:border-gray-600 flex flex-col"
-            tabIndex={0}
-            onKeyDown={handleKeyDown}
-          >
-            <div className="p-3 border-b border-gray-200 dark:border-gray-600 space-y-2">
-              <div className="relative">
-                <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder={`Search ${currentCat?.label || ''}...`}
-                  value={search}
-                  onChange={e => setSearch(e.target.value)}
-                  className="w-full pl-10 pr-3 py-2.5 text-sm bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-lg text-gray-700 dark:text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-                />
-              </div>
-              <div className="flex gap-1">
-                {[
-                  { id: 'default', label: 'Default', icon: List },
-                  { id: 'alpha', label: 'A-Z', icon: ArrowDownAZ },
-                  { id: 'alpha-desc', label: 'Z-A', icon: ArrowUpAZ },
-                  { id: 'id', label: 'ID', icon: Hash },
-                ].map(s => (
-                  <button
-                    key={s.id}
-                    onClick={() => setSortMode(s.id)}
-                    className={`flex-1 flex items-center justify-center gap-1 py-1.5 rounded-md text-xs font-medium transition-all ${
-                      sortMode === s.id
-                        ? 'bg-blue-500 text-white shadow-sm'
-                        : 'bg-white dark:bg-gray-600 border border-gray-200 dark:border-gray-500 text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-500'
-                    }`}
-                    title={`Sort by ${s.label}`}
-                  >
-                    <s.icon size={12} />
-                    {s.label}
-                  </button>
-                ))}
-              </div>
+          {category === 'rels' ? (
+            <div className="flex-1 overflow-hidden">
+              <ERDView data={data} onNav={handleNav} activeDb={activeDb} />
             </div>
-            <div className="flex-1 overflow-auto">
-              {filteredItems.map((item, i) => (
-                <button
-                  key={i}
-                  onClick={() => setSelected(item)}
-                  className={`w-full text-left px-4 py-3 border-b border-gray-200/50 dark:border-gray-600/50 flex items-center gap-3 text-sm transition-all ${
-                    selected === item
-                      ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border-l-2 border-l-blue-500'
-                      : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 hover:text-gray-800 dark:hover:text-gray-100 border-l-2 border-l-transparent'
-                  }`}
-                >
-                  <Icon type={currentCat?.icon} size={14} className={selected === item ? 'text-blue-500' : 'text-gray-400'} />
-                  <span className="truncate flex-1">{getItemLabel(item)}</span>
-                  {category === 'vls' && item.type && (
-                    <span className={`text-[9px] px-1.5 py-0.5 rounded-full flex-shrink-0 ${
-                      item.type === 'field' ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400' :
-                      item.type === 'external' ? 'bg-rose-100 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400' :
-                      'bg-yellow-100 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-400'
-                    }`}>{item.type === 'field' ? 'Field' : item.type === 'external' ? 'Ext' : 'Custom'}</span>
-                  )}
-                </button>
-              ))}
-            </div>
-          </div>
+          ) : (
+            <>
+              {/* Item list */}
+              <div
+                className="w-72 bg-gray-50 dark:bg-gray-700 border-r border-gray-200 dark:border-gray-600 flex flex-col"
+                tabIndex={0}
+                onKeyDown={handleKeyDown}
+              >
+                <div className="p-3 border-b border-gray-200 dark:border-gray-600 space-y-2">
+                  <div className="relative">
+                    <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <input
+                      type="text"
+                      placeholder={`Search ${currentCat?.label || ''}...`}
+                      value={search}
+                      onChange={e => setSearch(e.target.value)}
+                      className="w-full pl-10 pr-3 py-2.5 text-sm bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-lg text-gray-700 dark:text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                    />
+                  </div>
+                  <div className="flex gap-1">
+                    {[
+                      { id: 'default', label: 'Default', icon: List },
+                      { id: 'alpha', label: 'A-Z', icon: ArrowDownAZ },
+                      { id: 'alpha-desc', label: 'Z-A', icon: ArrowUpAZ },
+                      { id: 'id', label: 'ID', icon: Hash },
+                    ].map(s => (
+                      <button
+                        key={s.id}
+                        onClick={() => setSortMode(s.id)}
+                        className={`flex-1 flex items-center justify-center gap-1 py-1.5 rounded-md text-xs font-medium transition-all ${
+                          sortMode === s.id
+                            ? 'bg-blue-500 text-white shadow-sm'
+                            : 'bg-white dark:bg-gray-600 border border-gray-200 dark:border-gray-500 text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-500'
+                        }`}
+                        title={`Sort by ${s.label}`}
+                      >
+                        <s.icon size={12} />
+                        {s.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="flex-1 overflow-auto">
+                  {filteredItems.map((item, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setSelected(item)}
+                      className={`w-full text-left px-4 py-3 border-b border-gray-200/50 dark:border-gray-600/50 flex items-center gap-3 text-sm transition-all ${
+                        selected === item
+                          ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border-l-2 border-l-blue-500'
+                          : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 hover:text-gray-800 dark:hover:text-gray-100 border-l-2 border-l-transparent'
+                      }`}
+                    >
+                      <Icon type={currentCat?.icon} size={14} className={selected === item ? 'text-blue-500' : 'text-gray-400'} />
+                      <span className="truncate flex-1">{getItemLabel(item)}</span>
+                      {category === 'vls' && item.type && (
+                        <span className={`text-[9px] px-1.5 py-0.5 rounded-full flex-shrink-0 ${
+                          item.type === 'field' ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400' :
+                          item.type === 'external' ? 'bg-rose-100 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400' :
+                          'bg-yellow-100 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-400'
+                        }`}>{item.type === 'field' ? 'Field' : item.type === 'external' ? 'Ext' : 'Custom'}</span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
 
-          {/* Detail panel */}
-          <div className="flex-1 overflow-hidden bg-white dark:bg-gray-800">
-            {renderDetail()}
-          </div>
+              {/* Detail panel */}
+              <div className="flex-1 overflow-hidden bg-white dark:bg-gray-800">
+                {renderDetail()}
+              </div>
+            </>
+          )}
         </div>
       )}
     </div>

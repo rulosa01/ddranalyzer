@@ -11,7 +11,7 @@ const ERDView = ({ data, onNav, activeDb = 0 }) => {
   const [focusedTO, setFocusedTO] = useState(null);
   const [hoveredTO, setHoveredTO] = useState(null);
   const [baseTableFilter, setBaseTableFilter] = useState('');
-  const [viewMode, setViewMode] = useState('graph');
+  const [viewMode, setViewMode] = useState('list');
   const svgRef = useRef(null);
   const containerRef = useRef(null);
 
@@ -76,29 +76,36 @@ const ERDView = ({ data, onNav, activeDb = 0 }) => {
 
     const NODE_WIDTH = 180;
     const NODE_HEIGHT = 52;
-    const H_GAP = 60;
-    const V_GAP = 100;
     const PADDING = 80;
+
+    // Left-to-right layout: focused TO is layer 0 (leftmost), connections radiate right
+    const horizontal = !!focusedTO;
+    // More generous spacing in horizontal mode so even 1:1 relationships aren't cramped
+    const H_GAP = horizontal ? 120 : 60;
+    const V_GAP = horizontal ? 30 : 100;
 
     // --- Hierarchical layer assignment via BFS ---
     const toNames = new Set(filteredTOs.map(to => to.name));
     const layers = {};
     const visited = new Set();
 
-    // Find roots: TOs with no incoming edges from visible TOs, or most connections
-    const visibleInDegree = {};
-    filteredTOs.forEach(to => { visibleInDegree[to.name] = 0; });
-    filteredRels.forEach(rel => {
-      if (visibleInDegree[rel.rightTable] !== undefined) {
-        visibleInDegree[rel.rightTable]++;
+    // If focused, root is the focused TO; otherwise use in-degree heuristic
+    let roots;
+    if (focusedTO && toNames.has(focusedTO)) {
+      roots = [focusedTO];
+    } else {
+      const visibleInDegree = {};
+      filteredTOs.forEach(to => { visibleInDegree[to.name] = 0; });
+      filteredRels.forEach(rel => {
+        if (visibleInDegree[rel.rightTable] !== undefined) {
+          visibleInDegree[rel.rightTable]++;
+        }
+      });
+      roots = filteredTOs.filter(to => visibleInDegree[to.name] === 0).map(to => to.name);
+      if (roots.length === 0) {
+        const sorted = [...filteredTOs].sort((a, b) => (adjacency[b.name]?.size || 0) - (adjacency[a.name]?.size || 0));
+        roots = [sorted[0].name];
       }
-    });
-
-    let roots = filteredTOs.filter(to => visibleInDegree[to.name] === 0).map(to => to.name);
-    // If no roots found (all have incoming), pick the ones with most connections
-    if (roots.length === 0) {
-      const sorted = [...filteredTOs].sort((a, b) => (adjacency[b.name]?.size || 0) - (adjacency[a.name]?.size || 0));
-      roots = [sorted[0].name];
     }
 
     // BFS from roots
@@ -136,16 +143,13 @@ const ERDView = ({ data, onNav, activeDb = 0 }) => {
 
     // --- Median heuristic for reducing edge crossings ---
     const layerKeys = Object.keys(layerGroups).map(Number).sort((a, b) => a - b);
-    // Build position index for ordering
     const positionInLayer = {};
 
-    // Initial ordering: sort by base table within each layer for grouping
     layerKeys.forEach(l => {
       layerGroups[l].sort((a, b) => (a.baseTable || '').localeCompare(b.baseTable || '') || (a.name || '').localeCompare(b.name || ''));
       layerGroups[l].forEach((to, idx) => { positionInLayer[to.name] = idx; });
     });
 
-    // Two passes of median ordering to reduce crossings
     for (let pass = 0; pass < 2; pass++) {
       for (let li = 1; li < layerKeys.length; li++) {
         const l = layerKeys[li];
@@ -153,7 +157,6 @@ const ERDView = ({ data, onNav, activeDb = 0 }) => {
         const prevPositions = {};
         layerGroups[prevLayer].forEach((to, idx) => { prevPositions[to.name] = idx; });
 
-        // For each node in this layer, compute median position of its neighbors in the previous layer
         const medians = layerGroups[l].map(to => {
           const neighbors = [];
           const adj = adjacency[to.name] || new Set();
@@ -171,15 +174,20 @@ const ERDView = ({ data, onNav, activeDb = 0 }) => {
       }
     }
 
-    // --- Position nodes ---
+    // --- Position nodes (horizontal when focused, vertical otherwise) ---
     const nodes = [];
     const nodeMap = {};
     layerKeys.forEach(l => {
       const group = layerGroups[l];
-      const layerWidth = group.length * (NODE_WIDTH + H_GAP) - H_GAP;
       group.forEach((to, idx) => {
-        const x = PADDING + idx * (NODE_WIDTH + H_GAP);
-        const y = PADDING + l * (NODE_HEIGHT + V_GAP);
+        // Horizontal: layer → x (left-to-right), index → y (top-to-bottom)
+        // Vertical: index → x, layer → y (top-to-bottom)
+        const x = horizontal
+          ? PADDING + l * (NODE_WIDTH + H_GAP)
+          : PADDING + idx * (NODE_WIDTH + H_GAP);
+        const y = horizontal
+          ? PADDING + idx * (NODE_HEIGHT + V_GAP)
+          : PADDING + l * (NODE_HEIGHT + V_GAP);
         const node = {
           id: to.name,
           to,
@@ -199,7 +207,6 @@ const ERDView = ({ data, onNav, activeDb = 0 }) => {
     });
 
     // --- Calculate edges with bezier curves ---
-    // Count edges between same pair to offset them
     const pairCount = {};
     const pairIndex = {};
     filteredRels.forEach(rel => {
@@ -236,43 +243,58 @@ const ERDView = ({ data, onNav, activeDb = 0 }) => {
       const totalEdges = pairCount[key];
       const offset = (edgeIdx - (totalEdges - 1) / 2) * 20;
 
-      // Connect from bottom of source to top of target (hierarchical top-to-bottom)
-      const srcCx = source.x + source.width / 2;
       const srcCy = source.y + source.height / 2;
-      const tgtCx = target.x + target.width / 2;
       const tgtCy = target.y + target.height / 2;
 
       let startX, startY, endX, endY;
-      if (source.layer < target.layer) {
-        // Source is above target
-        startX = srcCx;
-        startY = source.y + source.height;
-        endX = tgtCx;
-        endY = target.y;
-      } else if (source.layer > target.layer) {
-        // Source is below target (back edge)
-        startX = srcCx;
-        startY = source.y;
-        endX = tgtCx;
-        endY = target.y + target.height;
-      } else {
-        // Same layer — connect sides
-        if (srcCx < tgtCx) {
+      if (horizontal) {
+        // Left-to-right: connect right side of source → left side of target
+        if (source.layer < target.layer) {
           startX = source.x + source.width;
           startY = srcCy;
           endX = target.x;
           endY = tgtCy;
-        } else {
+        } else if (source.layer > target.layer) {
           startX = source.x;
           startY = srcCy;
           endX = target.x + target.width;
           endY = tgtCy;
+        } else {
+          // Same layer — connect top/bottom
+          const srcCx = source.x + source.width / 2;
+          const tgtCx = target.x + target.width / 2;
+          if (srcCy < tgtCy) {
+            startX = srcCx; startY = source.y + source.height;
+            endX = tgtCx; endY = target.y;
+          } else {
+            startX = srcCx; startY = source.y;
+            endX = tgtCx; endY = target.y + target.height;
+          }
+        }
+      } else {
+        // Top-to-bottom (original)
+        const srcCx = source.x + source.width / 2;
+        const tgtCx = target.x + target.width / 2;
+        if (source.layer < target.layer) {
+          startX = srcCx; startY = source.y + source.height;
+          endX = tgtCx; endY = target.y;
+        } else if (source.layer > target.layer) {
+          startX = srcCx; startY = source.y;
+          endX = tgtCx; endY = target.y + target.height;
+        } else {
+          if (srcCx < tgtCx) {
+            startX = source.x + source.width; startY = srcCy;
+            endX = target.x; endY = tgtCy;
+          } else {
+            startX = source.x; startY = srcCy;
+            endX = target.x + target.width; endY = tgtCy;
+          }
         }
       }
 
-      // Control point for bezier curve
-      const midX = (startX + endX) / 2 + offset;
-      const midY = (startY + endY) / 2;
+      // Control point for bezier curve — offset perpendicular to flow direction
+      const midX = (startX + endX) / 2 + (horizontal ? 0 : offset);
+      const midY = (startY + endY) / 2 + (horizontal ? offset : 0);
 
       return {
         id: `${rel.leftTable}-${rel.rightTable}-${i}`,
@@ -295,7 +317,7 @@ const ERDView = ({ data, onNav, activeDb = 0 }) => {
     const maxY = nodes.length > 0 ? nodes.reduce((max, n) => Math.max(max, n.y + n.height), 0) + PADDING : 400;
 
     return { nodes, edges, width: maxX, height: maxY, baseTableColors };
-  }, [filteredTOs, filteredRels, adjacency]);
+  }, [filteredTOs, filteredRels, adjacency, focusedTO]);
 
   const handleMouseDown = (e) => {
     if (e.target === svgRef.current || e.target.tagName === 'svg' || (e.target.tagName === 'rect' && e.target.classList.contains('bg-rect'))) {
@@ -327,13 +349,9 @@ const ERDView = ({ data, onNav, activeDb = 0 }) => {
   }, [handleWheel]);
 
   const handleNodeClick = (node) => {
-    if (focusedTO === node.id) {
-      setFocusedTO(null);
-    } else {
-      setFocusedTO(node.id);
-      setPan({ x: 0, y: 0 });
-      setZoom(1);
-    }
+    setFocusedTO(node.id);
+    setPan({ x: 0, y: 0 });
+    setZoom(1);
   };
 
   const handleNodeDoubleClick = (node) => {
@@ -366,7 +384,7 @@ const ERDView = ({ data, onNav, activeDb = 0 }) => {
       <div className="p-6 text-center text-gray-500">
         <GitBranch size={48} className="mx-auto mb-4 text-gray-300" />
         <p>No table occurrences found</p>
-        <p className="text-sm text-gray-400 mt-2">Select a database with table occurrences to view the ERD</p>
+        <p className="text-sm text-gray-400 mt-2">Select a database with table occurrences to explore relationships</p>
       </div>
     );
   }
@@ -384,27 +402,21 @@ const ERDView = ({ data, onNav, activeDb = 0 }) => {
           <GitBranch size={20} className="text-white" />
         </div>
         <div className="flex-1 min-w-0">
-          <h2 className="text-lg font-bold text-gray-800 dark:text-white">Entity Relationship Diagram</h2>
+          <h2 className="text-lg font-bold text-gray-800 dark:text-white">Relationship Explorer</h2>
           <p className="text-sm text-gray-500 dark:text-gray-400">
             {filteredTOs.length}/{tos.length} TOs · {filteredRels.length}/{rels.length} relationships
             {focusedTO && <span className="text-violet-600 dark:text-violet-400"> · Focus: {focusedTO}</span>}
           </p>
         </div>
 
-        <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
+        {viewMode === 'graph' && (
           <button
-            onClick={() => setViewMode('graph')}
-            className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${viewMode === 'graph' ? 'bg-white dark:bg-gray-600 shadow-sm text-gray-800 dark:text-gray-200' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'}`}
+            onClick={() => { setViewMode('list'); setFocusedTO(null); }}
+            className="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-sm rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
           >
-            Graph
+            Back to List
           </button>
-          <button
-            onClick={() => setViewMode('list')}
-            className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${viewMode === 'list' ? 'bg-white dark:bg-gray-600 shadow-sm text-gray-800 dark:text-gray-200' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'}`}
-          >
-            List
-          </button>
-        </div>
+        )}
 
         <select
           value={baseTableFilter}
@@ -440,7 +452,7 @@ const ERDView = ({ data, onNav, activeDb = 0 }) => {
             <button onClick={handleFitToScreen} className="px-3 py-1 text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-600 rounded-md text-xs">Fit</button>
           </div>
 
-          <span className="text-xs text-gray-500 dark:text-gray-400">Click to focus · Double-click to view details · Scroll to zoom</span>
+          <span className="text-xs text-gray-500 dark:text-gray-400">Click to re-focus · Double-click to view details · Scroll to zoom</span>
 
           <div className="flex items-center gap-3 ml-auto flex-wrap">
             <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">Legend:</span>
@@ -502,10 +514,10 @@ const ERDView = ({ data, onNav, activeDb = 0 }) => {
                       </td>
                       <td className="p-3">
                         <button
-                          onClick={() => { setViewMode('graph'); setFocusedTO(to.name); setBaseTableFilter(''); }}
+                          onClick={() => { setViewMode('graph'); setFocusedTO(to.name); setBaseTableFilter(''); setPan({ x: 0, y: 0 }); setZoom(1); }}
                           className="text-xs text-violet-600 dark:text-violet-400 hover:text-violet-800 dark:hover:text-violet-300"
                         >
-                          Focus in graph
+                          View Relationships
                         </button>
                       </td>
                     </tr>
@@ -782,10 +794,10 @@ const ERDView = ({ data, onNav, activeDb = 0 }) => {
                 <span className="text-violet-500 dark:text-violet-400 ml-4 text-sm">{adjacency[focusedTO]?.size || 0} connections</span>
               </div>
               <button
-                onClick={() => setFocusedTO(null)}
+                onClick={() => { setFocusedTO(null); setViewMode('list'); }}
                 className="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-sm rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
               >
-                Show All
+                Back to List
               </button>
               <button
                 onClick={() => onNav('to', focusedTO, db.name)}
