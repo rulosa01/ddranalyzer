@@ -12,6 +12,8 @@ const ERDView = ({ data, onNav, activeDb = 0 }) => {
   const [hoveredTO, setHoveredTO] = useState(null);
   const [baseTableFilter, setBaseTableFilter] = useState('');
   const [viewMode, setViewMode] = useState('list');
+  const [sortField, setSortField] = useState('name');
+  const [sortDir, setSortDir] = useState('asc');
   const svgRef = useRef(null);
   const containerRef = useRef(null);
 
@@ -45,8 +47,20 @@ const ERDView = ({ data, onNav, activeDb = 0 }) => {
       filtered = filtered.filter(to => to.baseTable === baseTableFilter);
     }
     if (focusedTO && !baseTableFilter) {
-      const connected = adjacency[focusedTO] || new Set();
-      filtered = filtered.filter(to => to.name === focusedTO || connected.has(to.name));
+      // BFS to find all reachable TOs (children, grandchildren, etc.)
+      const reachable = new Set([focusedTO]);
+      const queue = [focusedTO];
+      while (queue.length > 0) {
+        const current = queue.shift();
+        const neighbors = adjacency[current] || new Set();
+        for (const n of neighbors) {
+          if (!reachable.has(n)) {
+            reachable.add(n);
+            queue.push(n);
+          }
+        }
+      }
+      filtered = filtered.filter(to => reachable.has(to.name));
     }
     return filtered;
   }, [tos, baseTableFilter, focusedTO, adjacency]);
@@ -75,14 +89,29 @@ const ERDView = ({ data, onNav, activeDb = 0 }) => {
     });
 
     const NODE_WIDTH = 180;
-    const NODE_HEIGHT = 52;
+    const HEADER_HEIGHT = 28;
+    const FIELD_ROW_HEIGHT = 20;
     const PADDING = 80;
 
     // Left-to-right layout: focused TO is layer 0 (leftmost), connections radiate right
     const horizontal = !!focusedTO;
-    // More generous spacing in horizontal mode so even 1:1 relationships aren't cramped
-    const H_GAP = horizontal ? 120 : 60;
-    const V_GAP = horizontal ? 30 : 100;
+    const H_GAP = horizontal ? 240 : 60;
+    const V_GAP = horizontal ? 40 : 100;
+
+    // Build per-TO field list from relationship predicates (deduplicated by field name)
+    const toFields = {};
+    filteredRels.forEach(rel => {
+      (rel.predicates || []).forEach(p => {
+        if (!toFields[rel.leftTable]) toFields[rel.leftTable] = [];
+        if (!toFields[rel.leftTable].find(f => f.field === p.leftField)) {
+          toFields[rel.leftTable].push({ field: p.leftField });
+        }
+        if (!toFields[rel.rightTable]) toFields[rel.rightTable] = [];
+        if (!toFields[rel.rightTable].find(f => f.field === p.rightField)) {
+          toFields[rel.rightTable].push({ field: p.rightField });
+        }
+      });
+    });
 
     // --- Hierarchical layer assignment via BFS ---
     const toNames = new Set(filteredTOs.map(to => to.name));
@@ -141,177 +170,226 @@ const ERDView = ({ data, onNav, activeDb = 0 }) => {
       layerGroups[l].push(to);
     });
 
-    // --- Median heuristic for reducing edge crossings ---
+    // --- Sort layers to minimize edge crossings ---
     const layerKeys = Object.keys(layerGroups).map(Number).sort((a, b) => a - b);
-    const positionInLayer = {};
 
-    layerKeys.forEach(l => {
-      layerGroups[l].sort((a, b) => (a.baseTable || '').localeCompare(b.baseTable || '') || (a.name || '').localeCompare(b.name || ''));
-      layerGroups[l].forEach((to, idx) => { positionInLayer[to.name] = idx; });
-    });
-
-    for (let pass = 0; pass < 2; pass++) {
-      for (let li = 1; li < layerKeys.length; li++) {
-        const l = layerKeys[li];
+    if (horizontal) {
+      // Sort child TOs by (parent position, field index on parent) so lines don't cross
+      layerKeys.forEach((l, li) => {
+        if (li === 0) return; // root layer stays as-is
         const prevLayer = layerKeys[li - 1];
-        const prevPositions = {};
-        layerGroups[prevLayer].forEach((to, idx) => { prevPositions[to.name] = idx; });
+        const prevTOs = layerGroups[prevLayer];
+        // Map parent TO name -> its position index in the previous layer
+        const parentPos = {};
+        prevTOs.forEach((to, idx) => { parentPos[to.name] = idx; });
 
-        const medians = layerGroups[l].map(to => {
-          const neighbors = [];
-          const adj = adjacency[to.name] || new Set();
-          for (const n of adj) {
-            if (prevPositions[n] !== undefined) neighbors.push(prevPositions[n]);
-          }
-          neighbors.sort((a, b) => a - b);
-          const median = neighbors.length > 0 ? neighbors[Math.floor(neighbors.length / 2)] : positionInLayer[to.name];
-          return { to, median };
+        // Build a sort key per child: [parentPosition, fieldIndexOnParent]
+        const childSortKey = {};
+        layerGroups[l].forEach(to => {
+          let bestParentPos = Infinity;
+          let bestFieldIdx = Infinity;
+          filteredRels.forEach(rel => {
+            (rel.predicates || []).forEach(p => {
+              prevTOs.forEach(parentTO => {
+                const pPos = parentPos[parentTO.name];
+                const parentFields = toFields[parentTO.name] || [];
+                let fi = -1;
+                if (rel.leftTable === parentTO.name && rel.rightTable === to.name) {
+                  fi = parentFields.findIndex(f => f.field === p.leftField);
+                } else if (rel.rightTable === parentTO.name && rel.leftTable === to.name) {
+                  fi = parentFields.findIndex(f => f.field === p.rightField);
+                }
+                if (fi >= 0) {
+                  // Primary: parent position, secondary: field index
+                  if (pPos < bestParentPos || (pPos === bestParentPos && fi < bestFieldIdx)) {
+                    bestParentPos = pPos;
+                    bestFieldIdx = fi;
+                  }
+                }
+              });
+            });
+          });
+          childSortKey[to.name] = [bestParentPos === Infinity ? 999 : bestParentPos, bestFieldIdx === Infinity ? 999 : bestFieldIdx];
         });
 
-        medians.sort((a, b) => a.median - b.median);
-        layerGroups[l] = medians.map(m => m.to);
+        layerGroups[l].sort((a, b) => {
+          const [aPar, aField] = childSortKey[a.name];
+          const [bPar, bField] = childSortKey[b.name];
+          return aPar !== bPar ? aPar - bPar : aField - bField;
+        });
+      });
+    } else {
+      // Vertical mode: use median heuristic
+      const positionInLayer = {};
+      layerKeys.forEach(l => {
+        layerGroups[l].sort((a, b) => (a.baseTable || '').localeCompare(b.baseTable || '') || (a.name || '').localeCompare(b.name || ''));
         layerGroups[l].forEach((to, idx) => { positionInLayer[to.name] = idx; });
+      });
+
+      for (let pass = 0; pass < 2; pass++) {
+        for (let li = 1; li < layerKeys.length; li++) {
+          const l = layerKeys[li];
+          const prevLayer = layerKeys[li - 1];
+          const prevPositions = {};
+          layerGroups[prevLayer].forEach((to, idx) => { prevPositions[to.name] = idx; });
+
+          const medians = layerGroups[l].map(to => {
+            const neighbors = [];
+            const adj = adjacency[to.name] || new Set();
+            for (const n of adj) {
+              if (prevPositions[n] !== undefined) neighbors.push(prevPositions[n]);
+            }
+            neighbors.sort((a, b) => a - b);
+            const median = neighbors.length > 0 ? neighbors[Math.floor(neighbors.length / 2)] : positionInLayer[to.name];
+            return { to, median };
+          });
+
+          medians.sort((a, b) => a.median - b.median);
+          layerGroups[l] = medians.map(m => m.to);
+          layerGroups[l].forEach((to, idx) => { positionInLayer[to.name] = idx; });
+        }
       }
     }
 
     // --- Position nodes (horizontal when focused, vertical otherwise) ---
+    // Compute dynamic node height based on field count
+    const getNodeHeight = (toName) => {
+      const fields = toFields[toName] || [];
+      return HEADER_HEIGHT + Math.max(1, fields.length) * FIELD_ROW_HEIGHT + 4;
+    };
+
+    // First pass: compute layer total heights for centering
+    const layerTotalHeights = {};
+    if (horizontal) {
+      layerKeys.forEach(l => {
+        let h = 0;
+        layerGroups[l].forEach((to, idx) => {
+          if (idx > 0) h += V_GAP;
+          h += getNodeHeight(to.name);
+        });
+        layerTotalHeights[l] = h;
+      });
+    }
+    const maxTotalHeight = horizontal ? Math.max(...Object.values(layerTotalHeights), 0) : 0;
+
     const nodes = [];
     const nodeMap = {};
     layerKeys.forEach(l => {
       const group = layerGroups[l];
+      const layerHeight = layerTotalHeights[l] || 0;
+      const yStart = horizontal ? PADDING + (maxTotalHeight - layerHeight) / 2 : 0;
+
+      let yAccum = yStart;
       group.forEach((to, idx) => {
-        // Horizontal: layer → x (left-to-right), index → y (top-to-bottom)
-        // Vertical: index → x, layer → y (top-to-bottom)
+        const nodeHeight = getNodeHeight(to.name);
+        const fields = toFields[to.name] || [];
         const x = horizontal
           ? PADDING + l * (NODE_WIDTH + H_GAP)
           : PADDING + idx * (NODE_WIDTH + H_GAP);
         const y = horizontal
-          ? PADDING + idx * (NODE_HEIGHT + V_GAP)
-          : PADDING + l * (NODE_HEIGHT + V_GAP);
+          ? yAccum
+          : PADDING + l * (nodeHeight + V_GAP);
         const node = {
           id: to.name,
           to,
           x,
           y,
           width: NODE_WIDTH,
-          height: NODE_HEIGHT,
+          height: nodeHeight,
           color: baseTableColors[to.baseTable] || '#6b7280',
           baseTable: to.baseTable,
           external: to.externalFile,
           connectionCount: adjacency[to.name]?.size || 0,
           layer: l,
+          fields,
         };
         nodes.push(node);
         nodeMap[node.id] = node;
+        yAccum += nodeHeight + V_GAP;
       });
     });
 
-    // --- Calculate edges with bezier curves ---
-    const pairCount = {};
-    const pairIndex = {};
-    filteredRels.forEach(rel => {
-      const key = [rel.leftTable, rel.rightTable].sort().join('|||');
-      pairCount[key] = (pairCount[key] || 0) + 1;
-    });
+    // --- Calculate edges: one per predicate, connecting field-to-field ---
+    // Helper: get Y center of a field row within a node
+    const getFieldY = (node, fieldName) => {
+      const idx = node.fields.findIndex(f => f.field === fieldName);
+      if (idx >= 0) return node.y + HEADER_HEIGHT + idx * FIELD_ROW_HEIGHT + FIELD_ROW_HEIGHT / 2;
+      return node.y + node.height / 2; // fallback
+    };
 
-    const edges = filteredRels.map((rel, i) => {
+    const edges = [];
+    filteredRels.forEach((rel, i) => {
       const source = nodeMap[rel.leftTable];
       const target = nodeMap[rel.rightTable];
-      if (!source || !target) return null;
+      if (!source || !target) return;
 
       // Self-referencing relationship
       if (rel.leftTable === rel.rightTable) {
-        return {
+        edges.push({
           id: `${rel.leftTable}-${rel.rightTable}-${i}`,
           rel,
           source: rel.leftTable,
           target: rel.rightTable,
           selfRef: true,
-          cx: source.x + source.width + 30,
-          cy: source.y + source.height / 2,
           nodeX: source.x,
           nodeY: source.y,
           nodeW: source.width,
           nodeH: source.height,
-          predicates: rel.predicates,
-        };
+        });
+        return;
       }
 
-      const key = [rel.leftTable, rel.rightTable].sort().join('|||');
-      if (!pairIndex[key]) pairIndex[key] = 0;
-      const edgeIdx = pairIndex[key]++;
-      const totalEdges = pairCount[key];
-      const offset = (edgeIdx - (totalEdges - 1) / 2) * 20;
+      (rel.predicates || []).forEach((p, pi) => {
+        const srcY = getFieldY(source, p.leftField);
+        const tgtY = getFieldY(target, p.rightField);
 
-      const srcCy = source.y + source.height / 2;
-      const tgtCy = target.y + target.height / 2;
-
-      let startX, startY, endX, endY;
-      if (horizontal) {
-        // Left-to-right: connect right side of source → left side of target
-        if (source.layer < target.layer) {
-          startX = source.x + source.width;
-          startY = srcCy;
-          endX = target.x;
-          endY = tgtCy;
-        } else if (source.layer > target.layer) {
-          startX = source.x;
-          startY = srcCy;
-          endX = target.x + target.width;
-          endY = tgtCy;
+        let startX, startY, endX, endY;
+        if (horizontal) {
+          if (source.layer <= target.layer) {
+            startX = source.x + source.width;
+            startY = srcY;
+            endX = target.x;
+            endY = tgtY;
+          } else {
+            startX = source.x;
+            startY = srcY;
+            endX = target.x + target.width;
+            endY = tgtY;
+          }
         } else {
-          // Same layer — connect top/bottom
           const srcCx = source.x + source.width / 2;
           const tgtCx = target.x + target.width / 2;
-          if (srcCy < tgtCy) {
+          if (source.layer < target.layer) {
             startX = srcCx; startY = source.y + source.height;
             endX = tgtCx; endY = target.y;
-          } else {
+          } else if (source.layer > target.layer) {
             startX = srcCx; startY = source.y;
             endX = tgtCx; endY = target.y + target.height;
-          }
-        }
-      } else {
-        // Top-to-bottom (original)
-        const srcCx = source.x + source.width / 2;
-        const tgtCx = target.x + target.width / 2;
-        if (source.layer < target.layer) {
-          startX = srcCx; startY = source.y + source.height;
-          endX = tgtCx; endY = target.y;
-        } else if (source.layer > target.layer) {
-          startX = srcCx; startY = source.y;
-          endX = tgtCx; endY = target.y + target.height;
-        } else {
-          if (srcCx < tgtCx) {
-            startX = source.x + source.width; startY = srcCy;
-            endX = target.x; endY = tgtCy;
           } else {
-            startX = source.x; startY = srcCy;
-            endX = target.x + target.width; endY = tgtCy;
+            if (srcCx < tgtCx) {
+              startX = source.x + source.width; startY = srcY;
+              endX = target.x; endY = tgtY;
+            } else {
+              startX = source.x; startY = srcY;
+              endX = target.x + target.width; endY = tgtY;
+            }
           }
         }
-      }
 
-      // Control point for bezier curve — offset perpendicular to flow direction
-      const midX = (startX + endX) / 2 + (horizontal ? 0 : offset);
-      const midY = (startY + endY) / 2 + (horizontal ? offset : 0);
+        const midX = (startX + endX) / 2;
+        const midY = (startY + endY) / 2;
 
-      return {
-        id: `${rel.leftTable}-${rel.rightTable}-${i}`,
-        rel,
-        source: rel.leftTable,
-        target: rel.rightTable,
-        selfRef: false,
-        startX,
-        startY,
-        endX,
-        endY,
-        midX,
-        midY,
-        offset,
-        predicates: rel.predicates,
-      };
-    }).filter(Boolean);
+        edges.push({
+          id: `${rel.leftTable}-${rel.rightTable}-${i}-${pi}`,
+          rel,
+          source: rel.leftTable,
+          target: rel.rightTable,
+          selfRef: false,
+          startX, startY, endX, endY, midX, midY,
+          predicate: p,
+        });
+      });
+    });
 
     const maxX = nodes.length > 0 ? nodes.reduce((max, n) => Math.max(max, n.x + n.width), 0) + PADDING : 400;
     const maxY = nodes.length > 0 ? nodes.reduce((max, n) => Math.max(max, n.y + n.height), 0) + PADDING : 400;
@@ -388,6 +466,43 @@ const ERDView = ({ data, onNav, activeDb = 0 }) => {
       </div>
     );
   }
+
+  const toggleSort = (field) => {
+    if (sortField === field) {
+      setSortDir(d => d === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDir('asc');
+    }
+  };
+
+  const sortedTOs = useMemo(() => {
+    const sorted = [...filteredTOs];
+    sorted.sort((a, b) => {
+      let cmp = 0;
+      if (sortField === 'name') {
+        cmp = (a.name || '').localeCompare(b.name || '');
+      } else if (sortField === 'baseTable') {
+        cmp = (a.baseTable || '').localeCompare(b.baseTable || '');
+      } else if (sortField === 'connections') {
+        cmp = (adjacency[a.name]?.size || 0) - (adjacency[b.name]?.size || 0);
+      }
+      return sortDir === 'desc' ? -cmp : cmp;
+    });
+    return sorted;
+  }, [filteredTOs, sortField, sortDir, adjacency]);
+
+  const SortHeader = ({ field, children }) => (
+    <th
+      className="text-left p-3 font-medium text-gray-700 dark:text-gray-200 cursor-pointer select-none hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+      onClick={() => toggleSort(field)}
+    >
+      <span className="inline-flex items-center gap-1">
+        {children}
+        {sortField === field ? (sortDir === 'asc' ? ' ↑' : ' ↓') : ''}
+      </span>
+    </th>
+  );
 
   const operatorSymbol = (type) => {
     const ops = { Equal: '=', NotEqual: '≠', GreaterThan: '>', GreaterThanOrEqual: '≥', GreaterThanOrEqualTo: '≥', LessThan: '<', LessThanOrEqual: '≤', LessThanOrEqualTo: '≤', CartesianJoin: '×', CartesianProduct: '×' };
@@ -480,15 +595,15 @@ const ERDView = ({ data, onNav, activeDb = 0 }) => {
             <table className="w-full text-sm">
               <thead className="bg-gray-50 dark:bg-gray-700 sticky top-0">
                 <tr>
-                  <th className="text-left p-3 font-medium text-gray-700 dark:text-gray-200">Table Occurrence</th>
-                  <th className="text-left p-3 font-medium text-gray-700 dark:text-gray-200">Base Table</th>
-                  <th className="text-left p-3 font-medium text-gray-700 dark:text-gray-200">Connections</th>
+                  <SortHeader field="name">Table Occurrence</SortHeader>
+                  <SortHeader field="baseTable">Base Table</SortHeader>
+                  <SortHeader field="connections">Connections</SortHeader>
                   <th className="text-left p-3 font-medium text-gray-700 dark:text-gray-200">External</th>
                   <th className="text-left p-3 font-medium text-gray-700 dark:text-gray-200">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {filteredTOs.map((to, i) => {
+                {sortedTOs.map((to, i) => {
                   const connections = adjacency[to.name]?.size || 0;
                   const color = layout.baseTableColors[to.baseTable] || '#6b7280';
                   return (
@@ -605,10 +720,9 @@ const ERDView = ({ data, onNav, activeDb = 0 }) => {
                   const isHoverHighlighted = hoveredTO && (edge.source === hoveredTO || edge.target === hoveredTO);
                   const highlighted = isHighlighted || isHoverHighlighted;
                   const strokeColor = highlighted ? '#8b5cf6' : '#9ca3af';
-                  const strokeW = highlighted ? 2.5 : 1.5;
+                  const strokeW = highlighted ? 2 : 1.5;
 
                   if (edge.selfRef) {
-                    // Self-referencing loop
                     const r = 25;
                     const x = edge.nodeX + edge.nodeW;
                     const y = edge.nodeY + edge.nodeH / 2;
@@ -619,18 +733,17 @@ const ERDView = ({ data, onNav, activeDb = 0 }) => {
                           fill="none"
                           stroke={strokeColor}
                           strokeWidth={strokeW}
-                          markerEnd={highlighted ? 'url(#arrowhead-highlight)' : 'url(#arrowhead)'}
                         />
                       </g>
                     );
                   }
 
-                  // Bezier curve path
                   const path = `M ${edge.startX} ${edge.startY} Q ${edge.midX} ${edge.midY} ${edge.endX} ${edge.endY}`;
 
-                  // Label position (along the curve at t=0.5)
-                  const labelX = 0.25 * edge.startX + 0.5 * edge.midX + 0.25 * edge.endX;
-                  const labelY = 0.25 * edge.startY + 0.5 * edge.midY + 0.25 * edge.endY;
+                  // Operator badge at midpoint
+                  const op = edge.predicate ? operatorSymbol(edge.predicate.type) : null;
+                  const badgeX = 0.25 * edge.startX + 0.5 * edge.midX + 0.25 * edge.endX;
+                  const badgeY = 0.25 * edge.startY + 0.5 * edge.midY + 0.25 * edge.endY;
 
                   return (
                     <g key={edge.id}>
@@ -639,53 +752,26 @@ const ERDView = ({ data, onNav, activeDb = 0 }) => {
                         fill="none"
                         stroke={strokeColor}
                         strokeWidth={strokeW}
-                        markerEnd={highlighted ? 'url(#arrowhead-highlight)' : 'url(#arrowhead)'}
                       />
-                      {/* Predicate labels */}
-                      {edge.predicates?.length > 0 && (
-                        <g transform={`translate(${labelX}, ${labelY})`}>
-                          {edge.predicates.map((p, pi) => {
-                            const label = `${p.leftField} ${operatorSymbol(p.type)} ${p.rightField}`;
-                            const yOff = (pi - (edge.predicates.length - 1) / 2) * 14;
-                            return (
-                              <g key={pi}>
-                                <rect
-                                  x={-label.length * 3.2}
-                                  y={yOff - 8}
-                                  width={label.length * 6.4}
-                                  height={14}
-                                  rx="3"
-                                  fill="white"
-                                  fillOpacity="0.9"
-                                  stroke={highlighted ? '#8b5cf6' : '#e5e7eb'}
-                                  strokeWidth="0.5"
-                                />
-                                <text
-                                  x={0}
-                                  y={yOff + 2}
-                                  fontSize="8"
-                                  fill={highlighted ? '#7c3aed' : '#6b7280'}
-                                  textAnchor="middle"
-                                  fontFamily="monospace"
-                                  className="pointer-events-none"
-                                >
-                                  {label}
-                                </text>
-                              </g>
-                            );
-                          })}
+                      {op && (
+                        <g transform={`translate(${badgeX}, ${badgeY})`}>
+                          <circle r="8" fill="white" stroke={highlighted ? '#8b5cf6' : '#d1d5db'} strokeWidth="1" />
+                          <text x="0" y="3.5" textAnchor="middle" fontSize="9" fontWeight="600" fill={highlighted ? '#7c3aed' : '#6b7280'}>{op}</text>
                         </g>
                       )}
                     </g>
                   );
                 })}
 
-                {/* Nodes */}
+                {/* Nodes — FileMaker style: header + field rows */}
                 {layout.nodes.map(node => {
                   const isFocused = focusedTO === node.id;
                   const isConnected = focusedTO && adjacency[focusedTO]?.has(node.id);
                   const isHovered = hoveredTO === node.id;
                   const opacity = focusedTO ? (isFocused || isConnected ? 1 : 0.3) : 1;
+                  const HEADER_H = 28;
+                  const ROW_H = 20;
+                  const fields = node.fields || [];
 
                   return (
                     <g
@@ -698,63 +784,85 @@ const ERDView = ({ data, onNav, activeDb = 0 }) => {
                       onMouseLeave={() => setHoveredTO(null)}
                       style={{ opacity }}
                     >
-                      {/* Node background */}
+                      {/* Card background */}
                       <rect
                         width={node.width}
                         height={node.height}
-                        rx="8"
-                        fill={isFocused ? '#1e1b4b' : 'white'}
-                        stroke={isFocused ? '#8b5cf6' : isHovered ? '#6366f1' : '#e5e7eb'}
+                        rx="6"
+                        fill="white"
+                        stroke={isFocused ? '#8b5cf6' : isHovered ? '#6366f1' : '#d1d5db'}
                         strokeWidth={isFocused ? 2.5 : isHovered ? 2 : 1}
                       />
-                      {/* Color stripe on left */}
+
+                      {/* Header bar */}
                       <rect
                         x="1"
                         y="1"
-                        width="4"
-                        height={node.height - 2}
+                        width={node.width - 2}
+                        height={HEADER_H - 1}
+                        rx="5"
+                        fill={isFocused ? node.color : node.color}
+                      />
+                      {/* Square off header bottom corners */}
+                      <rect
+                        x="1"
+                        y={HEADER_H / 2}
+                        width={node.width - 2}
+                        height={HEADER_H / 2}
                         fill={node.color}
                       />
 
+                      {/* TO name in header */}
+                      <text
+                        x={8}
+                        y={18}
+                        fontSize="11"
+                        fontWeight="700"
+                        fill="white"
+                        className="pointer-events-none"
+                      >
+                        {node.id.length > 24 ? node.id.slice(0, 22) + '…' : node.id}
+                      </text>
+
                       {/* External indicator */}
                       {node.external && (
-                        <g transform={`translate(${node.width - 20}, 4)`}>
-                          <rect width="16" height="12" rx="3" fill="#ef4444" fillOpacity="0.9" />
-                          <text x="8" y="9" textAnchor="middle" fontSize="7" fill="white" fontWeight="600">EXT</text>
+                        <g transform={`translate(${node.width - 28}, 5)`}>
+                          <rect width="22" height="14" rx="3" fill="rgba(255,255,255,0.3)" />
+                          <text x="11" y="11" textAnchor="middle" fontSize="7" fill="white" fontWeight="600">EXT</text>
                         </g>
                       )}
 
-                      {/* TO name */}
-                      <text
-                        x={12}
-                        y={20}
-                        fontSize="11"
-                        fontWeight="600"
-                        fill={isFocused ? 'white' : '#1f2937'}
-                        className="pointer-events-none"
-                      >
-                        {node.id.length > 22 ? node.id.slice(0, 20) + '…' : node.id}
-                      </text>
+                      {/* Separator line */}
+                      <line x1="0" y1={HEADER_H} x2={node.width} y2={HEADER_H} stroke="#e5e7eb" strokeWidth="1" />
 
-                      {/* Base table name */}
-                      <text
-                        x={12}
-                        y={36}
-                        fontSize="9"
-                        fill={isFocused ? '#a5b4fc' : '#9ca3af'}
-                        className="pointer-events-none"
-                      >
-                        {(node.baseTable || '').length > 24 ? (node.baseTable || '').slice(0, 22) + '…' : (node.baseTable || '')}
-                      </text>
-
-                      {/* Connection count badge */}
-                      {node.connectionCount > 0 && (
-                        <g transform={`translate(-6, -6)`}>
-                          <circle r="9" fill={node.color} />
-                          <text x="0" y="3.5" textAnchor="middle" fontSize="8" fill="white" fontWeight="700">
-                            {node.connectionCount}
+                      {/* Field rows */}
+                      {fields.length > 0 ? fields.map((f, fi) => (
+                        <g key={fi}>
+                          {fi > 0 && (
+                            <line x1="8" y1={HEADER_H + fi * ROW_H} x2={node.width - 8} y2={HEADER_H + fi * ROW_H} stroke="#f3f4f6" strokeWidth="0.5" />
+                          )}
+                          <text
+                            x={8}
+                            y={HEADER_H + fi * ROW_H + ROW_H / 2 + 3.5}
+                            fontSize="9"
+                            fill="#374151"
+                            fontFamily="monospace"
+                            className="pointer-events-none"
+                          >
+                            {f.field.length > 24 ? f.field.slice(0, 22) + '…' : f.field}
                           </text>
                         </g>
+                      )) : (
+                        <text
+                          x={8}
+                          y={HEADER_H + ROW_H / 2 + 3.5}
+                          fontSize="9"
+                          fill="#9ca3af"
+                          fontStyle="italic"
+                          className="pointer-events-none"
+                        >
+                          No relationships
+                        </text>
                       )}
                     </g>
                   );
@@ -763,7 +871,7 @@ const ERDView = ({ data, onNav, activeDb = 0 }) => {
             </svg>
 
             {/* Hover tooltip */}
-            {hoveredTO && !focusedTO && layout.nodes.find(n => n.id === hoveredTO) && (() => {
+            {hoveredTO && layout.nodes.find(n => n.id === hoveredTO) && (() => {
               const node = layout.nodes.find(n => n.id === hoveredTO);
               return (
                 <div
@@ -778,6 +886,7 @@ const ERDView = ({ data, onNav, activeDb = 0 }) => {
                   <div className="text-gray-300">Base: {node.baseTable}</div>
                   <div className="text-gray-300">{node.connectionCount} connection{node.connectionCount !== 1 ? 's' : ''}</div>
                   {node.external && <div className="text-red-300">External: {node.external}</div>}
+                  <div className="text-gray-400 mt-1">Click to focus · Double-click for details</div>
                 </div>
               );
             })()}
