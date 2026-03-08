@@ -49,7 +49,7 @@ export default function DDRExplorer() {
     { id: 'tables', label: 'Tables', icon: 'table', items: db?.tables || [] },
     { id: 'tos', label: 'TOs', icon: 'to', items: db?.tableOccurrences || [] },
     { id: 'layouts', label: 'Layouts', icon: 'layout', items: db?.layouts || [] },
-    { id: 'scripts', label: 'Scripts', icon: 'script', items: db?.scripts || [] },
+    { id: 'scripts', label: 'Scripts', icon: 'script', items: (db?.scripts || []).filter(s => s.name && s.name !== '-') },
     { id: 'rels', label: 'Relationships', icon: 'rel', items: db?.relationships || [] },
     { id: 'vls', label: 'Value Lists', icon: 'vl', items: db?.valueLists || [] },
     { id: 'cfs', label: 'Custom Functions', icon: 'cf', items: db?.customFunctions || [] },

@@ -361,7 +361,7 @@ function parseRelationships(doc) {
 function parseLayouts(doc) {
   const layouts = [];
 
-  for (const layoutEl of doc.querySelectorAll('LayoutCatalog > Layout')) {
+  for (const layoutEl of doc.querySelectorAll('LayoutCatalog Layout')) {
     const layout = {
       id: layoutEl.getAttribute('id'),
       name: layoutEl.getAttribute('name'),
@@ -384,9 +384,9 @@ function parseLayouts(doc) {
       }
     }
 
-    // Button scripts
-    for (const buttonEl of layoutEl.querySelectorAll('Object[type="Button"] ButtonObj Step Script')) {
-      const scriptName = buttonEl.getAttribute('name');
+    // All script references on layout (buttons, button bars, popovers, etc.)
+    for (const scriptEl of layoutEl.querySelectorAll('Script[name]')) {
+      const scriptName = scriptEl.getAttribute('name');
       if (scriptName && !layout.buttonScripts.includes(scriptName)) {
         layout.buttonScripts.push(scriptName);
       }

@@ -414,8 +414,14 @@ const ERDView = ({ data, onNav, activeDb = 0 }) => {
 
   const handleWheel = useCallback((e) => {
     e.preventDefault();
-    const delta = e.deltaY > 0 ? 0.9 : 1.1;
-    setZoom(z => Math.max(0.1, Math.min(4, z * delta)));
+    if (e.ctrlKey || e.metaKey) {
+      // Pinch-to-zoom or Ctrl+scroll = zoom
+      const delta = e.deltaY > 0 ? 0.93 : 1.07;
+      setZoom(z => Math.max(0.1, Math.min(4, z * delta)));
+    } else {
+      // Regular scroll = pan
+      setPan(p => ({ x: p.x - e.deltaX, y: p.y - e.deltaY }));
+    }
   }, []);
 
   // Attach wheel listener as non-passive so preventDefault works
@@ -425,6 +431,23 @@ const ERDView = ({ data, onNav, activeDb = 0 }) => {
     el.addEventListener('wheel', handleWheel, { passive: false });
     return () => el.removeEventListener('wheel', handleWheel);
   }, [handleWheel]);
+
+  // Arrow keys to pan
+  useEffect(() => {
+    if (viewMode !== 'graph') return;
+    const handleKeyDown = (e) => {
+      const PAN_STEP = 60;
+      if (e.key === 'ArrowLeft') { setPan(p => ({ ...p, x: p.x + PAN_STEP })); e.preventDefault(); }
+      else if (e.key === 'ArrowRight') { setPan(p => ({ ...p, x: p.x - PAN_STEP })); e.preventDefault(); }
+      else if (e.key === 'ArrowUp') { setPan(p => ({ ...p, y: p.y + PAN_STEP })); e.preventDefault(); }
+      else if (e.key === 'ArrowDown') { setPan(p => ({ ...p, y: p.y - PAN_STEP })); e.preventDefault(); }
+      else if (e.key === '=' || e.key === '+') { setZoom(z => Math.min(4, z + 0.1)); e.preventDefault(); }
+      else if (e.key === '-') { setZoom(z => Math.max(0.1, z - 0.1)); e.preventDefault(); }
+      else if (e.key === '0') { setZoom(1); setPan({ x: 0, y: 0 }); e.preventDefault(); }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [viewMode]);
 
   const handleNodeClick = (node) => {
     setFocusedTO(node.id);
@@ -472,7 +495,7 @@ const ERDView = ({ data, onNav, activeDb = 0 }) => {
       setSortDir(d => d === 'asc' ? 'desc' : 'asc');
     } else {
       setSortField(field);
-      setSortDir('asc');
+      setSortDir(field === 'connections' ? 'desc' : 'asc');
     }
   };
 
@@ -567,7 +590,7 @@ const ERDView = ({ data, onNav, activeDb = 0 }) => {
             <button onClick={handleFitToScreen} className="px-3 py-1 text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-600 rounded-md text-xs">Fit</button>
           </div>
 
-          <span className="text-xs text-gray-500 dark:text-gray-400">Click to re-focus · Double-click to view details · Scroll to zoom</span>
+          <span className="text-xs text-gray-500 dark:text-gray-400">Scroll to pan · Pinch/⌘+scroll to zoom · Arrow keys · Click to focus</span>
 
           <div className="flex items-center gap-3 ml-auto flex-wrap">
             <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">Legend:</span>

@@ -28,7 +28,8 @@ const ScriptDetail = ({ script, dbName, reverseRefs, data, onNav }) => {
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto p-4 space-y-2 bg-gray-50 dark:bg-gray-900">
+      {/* Metadata sections */}
+      <div className="shrink-0 overflow-auto p-4 space-y-2 bg-gray-50 dark:bg-gray-900" style={{ maxHeight: '40%' }}>
         <Section title="Called By" count={callers.length} icon={<Play size={14} className="text-amber-500" />} color="script">
           <div className="p-3 flex flex-wrap gap-1.5">
             {callers.map((c, i) => <NavLink key={i} type="script" name={c.script} small onClick={() => onNav('script', c.script, c.db)} />)}
@@ -100,67 +101,72 @@ const ScriptDetail = ({ script, dbName, reverseRefs, data, onNav }) => {
             </div>
           </Section>
         )}
+      </div>
 
-        {script.steps?.length > 0 && (
-          <Section title="Steps" count={script.steps.length} icon={<List size={14} className="text-gray-500 dark:text-gray-400" />} color="field" defaultOpen={false}>
-            <div className="p-3 text-xs space-y-0.5 max-h-[32rem] overflow-auto">
-              {script.steps.map((step, i) => (
-                <div key={i} className={`py-1.5 px-2 rounded ${!step.enabled ? 'opacity-50 bg-gray-100 dark:bg-gray-700' : 'hover:bg-white dark:hover:bg-gray-700'}`}>
-                  <div className="flex items-start gap-2">
-                    <span className="text-gray-400 dark:text-gray-500 w-6 text-right flex-shrink-0 font-mono">{step.index || i+1}</span>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className={`font-medium ${!step.enabled ? 'text-gray-400 dark:text-gray-500 line-through' : 'text-gray-700 dark:text-gray-200'}`}>{step.name}</span>
-                        {step.scriptRef && (
-                          <NavLink type={step.externalFile ? 'ext' : 'script'} name={step.externalFile ? `${step.externalFile}::${step.scriptRef}` : step.scriptRef} small
-                            onClick={() => !step.externalFile && onNav('script', step.scriptRef, dbName)} />
-                        )}
-                        {step.layoutRef && <NavLink type="layout" name={step.layoutRef} small onClick={() => onNav('layout', step.layoutRef, dbName)} />}
-                        {step.table && <Badge color="table" size="xs">{step.table}</Badge>}
-                        {!step.enabled && <Badge color="ext" size="xs">Disabled</Badge>}
-                      </div>
-                      {/* Show step details based on type */}
-                      {step.text && step.text !== step.name && (
-                        <div className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5 font-mono truncate" title={step.text}>{step.text}</div>
+      {/* Steps - fills remaining vertical space */}
+      {script.steps?.length > 0 && (
+        <div className="flex-1 min-h-0 flex flex-col border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+          <div className="px-4 py-3 flex items-center gap-3 shrink-0">
+            <List size={14} className="text-gray-500 dark:text-gray-400" />
+            <span className="font-medium text-gray-700 dark:text-gray-200 text-sm flex-1">Steps</span>
+            <Badge color="field" size="xs">{script.steps.length}</Badge>
+          </div>
+          <div className="flex-1 overflow-auto px-4 pb-4 text-xs space-y-0.5">
+            {script.steps.map((step, i) => (
+              <div key={i} className={`py-1.5 px-2 rounded ${!step.enabled ? 'opacity-50 bg-gray-100 dark:bg-gray-700' : 'hover:bg-white dark:hover:bg-gray-700'}`}>
+                <div className="flex items-start gap-2">
+                  <span className="text-gray-400 dark:text-gray-500 w-6 text-right flex-shrink-0 font-mono">{step.index || i+1}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className={`font-medium ${!step.enabled ? 'text-gray-400 dark:text-gray-500 line-through' : 'text-gray-700 dark:text-gray-200'}`}>{step.name}</span>
+                      {step.scriptRef && (
+                        <NavLink type={step.externalFile ? 'ext' : 'script'} name={step.externalFile ? `${step.externalFile}::${step.scriptRef}` : step.scriptRef} small
+                          onClick={() => !step.externalFile && onNav('script', step.scriptRef, dbName)} />
                       )}
-                      {step.targetField && (
-                        <div className="text-[11px] text-cyan-600 dark:text-cyan-400 mt-0.5">→ {step.targetField}</div>
-                      )}
-                      {step.variableName && (
-                        <div className="text-[11px] text-violet-600 dark:text-violet-400 mt-0.5">
-                          {step.variableName}{step.repetition && ` [${step.repetition}]`}
-                          {step.calculation && <span className="text-gray-400 dark:text-gray-500"> = </span>}
-                          {step.calculation && <span className="text-gray-600 dark:text-gray-300 font-mono">{step.calculation.length > 60 ? step.calculation.slice(0, 60) + '...' : step.calculation}</span>}
-                        </div>
-                      )}
-                      {step.condition && (
-                        <div className="text-[11px] text-amber-600 dark:text-amber-400 mt-0.5 font-mono">
-                          {step.condition.length > 80 ? step.condition.slice(0, 80) + '...' : step.condition}
-                        </div>
-                      )}
-                      {step.url && (
-                        <div className="text-[11px] text-blue-600 dark:text-blue-400 mt-0.5 font-mono truncate">{step.url}</div>
-                      )}
-                      {step.sortFields && (
-                        <div className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">Sort by: {step.sortFields.join(', ')}</div>
-                      )}
-                      {step.title && (
-                        <div className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">Title: {step.title}</div>
-                      )}
-                      {step.windowName && (
-                        <div className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">Window: {step.windowName}</div>
-                      )}
-                      {step.recordAction && (
-                        <div className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">{step.recordAction}</div>
-                      )}
+                      {step.layoutRef && <NavLink type="layout" name={step.layoutRef} small onClick={() => onNav('layout', step.layoutRef, dbName)} />}
+                      {step.table && <Badge color="table" size="xs">{step.table}</Badge>}
+                      {!step.enabled && <Badge color="ext" size="xs">Disabled</Badge>}
                     </div>
+                    {step.text && step.text !== step.name && (
+                      <div className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5 font-mono truncate" title={step.text}>{step.text}</div>
+                    )}
+                    {step.targetField && (
+                      <div className="text-[11px] text-cyan-600 dark:text-cyan-400 mt-0.5">→ {step.targetField}</div>
+                    )}
+                    {step.variableName && (
+                      <div className="text-[11px] text-violet-600 dark:text-violet-400 mt-0.5">
+                        {step.variableName}{step.repetition && ` [${step.repetition}]`}
+                        {step.calculation && <span className="text-gray-400 dark:text-gray-500"> = </span>}
+                        {step.calculation && <span className="text-gray-600 dark:text-gray-300 font-mono">{step.calculation.length > 60 ? step.calculation.slice(0, 60) + '...' : step.calculation}</span>}
+                      </div>
+                    )}
+                    {step.condition && (
+                      <div className="text-[11px] text-amber-600 dark:text-amber-400 mt-0.5 font-mono">
+                        {step.condition.length > 80 ? step.condition.slice(0, 80) + '...' : step.condition}
+                      </div>
+                    )}
+                    {step.url && (
+                      <div className="text-[11px] text-blue-600 dark:text-blue-400 mt-0.5 font-mono truncate">{step.url}</div>
+                    )}
+                    {step.sortFields && (
+                      <div className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">Sort by: {step.sortFields.join(', ')}</div>
+                    )}
+                    {step.title && (
+                      <div className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">Title: {step.title}</div>
+                    )}
+                    {step.windowName && (
+                      <div className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">Window: {step.windowName}</div>
+                    )}
+                    {step.recordAction && (
+                      <div className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">{step.recordAction}</div>
+                    )}
                   </div>
                 </div>
-              ))}
-            </div>
-          </Section>
-        )}
-      </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
