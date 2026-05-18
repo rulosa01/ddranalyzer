@@ -54,4 +54,4 @@ npm run preview
 
 ## License
 
-Private project.
+MIT License
